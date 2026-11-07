@@ -2,15 +2,15 @@
 
 A cloud service that turns English interview and usability-test recordings into structured Markdown research documents.
 
-![Login page](./docs/images/auth-light.png)
+![Login page](./docs/images/interlixir-1-login.png)
 
-![Upload page](./docs/images/upload-light.png)
+![Upload page](./docs/images/interlixir-2-new-upload.png)
 
-![Transcribing page](./docs/images/job-transcribing-light.png)
+![Transcribing page](./docs/images/interlixir-3-transcribing.png)
 
-![Job done page](./docs/images/job-done-light.png)
+![Job done page](./docs/images/interlixir-4-job-done.png)
 
-![Ask AI page](./docs/images/project-ask-ai-light.png)
+![Ask AI page](./docs/images/interlixir-5-ai-chat.png)
 
 
 Recordings are uploaded straight to S3 and then run through an asynchronous, event-driven pipeline:
