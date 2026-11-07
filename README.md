@@ -2,6 +2,17 @@
 
 A cloud service that turns English interview and usability-test recordings into structured Markdown research documents.
 
+![Login page](./docs/images/auth-light.png)
+
+![Upload page](./docs/images/upload-light.png)
+
+![Transcribing page](./docs/images/job-transcribing-light.png)
+
+![Job done page](./docs/images/job-done-light.png)
+
+![Ask AI page](./docs/images/project-ask-ai-light.png)
+
+
 Recordings are uploaded straight to S3 and then run through an asynchronous, event-driven pipeline:
 
 **chunk → transcribe (self-hosted Whisper on Fargate, scaling 0–8 on queue backlog) → merge → PII redaction → schema-driven synthesis (Amazon Bedrock) → document**
@@ -11,6 +22,8 @@ Users organise documents into projects, follow progress stage by stage, retry fa
 > Built as a university cloud-computing project and shared as a portfolio piece. Resource names, account IDs and endpoints in this repo are placeholders (`interlixir-*`, `123456789012`, `*.example.com`). Replace them with your own before deploying.
 
 ## Architecture
+
+![Architecture Diagram](./docs/images/aws-architecture-overview.png)
 
 - **API:** one FastAPI service on ECS Fargate, behind an HTTP API Gateway (JWT authorizer) and an ALB. Uploads go straight to S3 with pre-signed POST policies.
 - **Pipeline:** S3 upload → job creator (Lambda, ffmpeg chunking) → SQS → Whisper workers (Fargate, auto-scaled on queue depth) → synthesis (Lambda, Bedrock) → Markdown document.
