@@ -39,7 +39,6 @@ Users organise documents into projects, follow progress stage by stage, retry fa
 | `web/` | The single-page app |
 | `schemas/builtin/` | The six built-in synthesis JSON Schemas |
 | `scripts/` | Schema checks, image build and push, SPA deploy, schema seeding |
-| `.github/workflows/` | CI (tests with moto, no AWS access needed) and an opt-in `@claude` assistant |
 
 ## Running it
 
