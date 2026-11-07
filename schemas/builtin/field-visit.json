@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Observational field visit",
+  "description": "The setting, activities and workarounds observed in context, environmental factors, pain points and opportunities.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "summary",
+    "setting",
+    "activities",
+    "workarounds",
+    "environmentalFactors",
+    "painPoints",
+    "notableQuotes",
+    "opportunities"
+  ],
+  "properties": {
+    "summary": {
+      "type": "string",
+      "description": "Three to five sentences on what the session covered and what matters most."
+    },
+    "setting": {
+      "type": "string",
+      "description": "The kind of place and situation observed, without names or addresses (e.g. \"a small warehouse during the morning shift\")."
+    },
+    "activities": {
+      "type": "array",
+      "description": "Activities observed, in the order they happened.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "activity",
+          "actors",
+          "toolsAndArtefacts",
+          "observations"
+        ],
+        "properties": {
+          "activity": {
+            "type": "string",
+            "description": "What was being done."
+          },
+          "actors": {
+            "type": "string",
+            "description": "Who did it, by role or pseudonym."
+          },
+          "toolsAndArtefacts": {
+            "type": "array",
+            "description": "Tools, systems, documents or objects used.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "observations": {
+            "type": "string",
+            "description": "How it was done, including sequence, timing and interruptions."
+          }
+        }
+      }
+    },
+    "workarounds": {
+      "type": "array",
+      "description": "Improvised fixes or deviations from the official process, and what they compensate for.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "environmentalFactors": {
+      "type": "array",
+      "description": "Physical, social or organisational conditions that shaped the work (noise, interruptions, policies).",
+      "items": {
+        "type": "string"
+      }
+    },
+    "painPoints": {
+      "type": "array",
+      "description": "Problems observed or described.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "notableQuotes": {
+      "type": "array",
+      "description": "The most telling quotes, most telling first. At most 10.",
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "speaker",
+          "text"
+        ],
+        "properties": {
+          "speaker": {
+            "type": "string",
+            "description": "Pseudonym of the speaker, e.g. \"Participant 1\"."
+          },
+          "text": {
+            "type": "string",
+            "description": "Verbatim from the redacted transcript."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Approximate position in the recording (mm:ss or h:mm:ss), if known.",
+            "pattern": "^\\d{1,2}:\\d{2}(:\\d{2})?$"
+          }
+        }
+      }
+    },
+    "opportunities": {
+      "type": "array",
+      "description": "Design or process opportunities that follow from the observations.",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

@@ -1,0 +1,40 @@
+# OS / editor
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.obsidian/
+
+# Build output
+dist/
+build/
+out/
+*.zip
+
+# Node
+node_modules/
+npm-debug.log*
+.pnpm-store/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Secrets / local env
+.env
+.env.*
+!.env.example
+
+# Media and model weights: too big for git. Keep samples and demo recordings outside the repo.
+*.mp3
+*.mp4
+*.m4a
+*.mov
+*.wav
+*.webm
+services/whisper-worker/models/

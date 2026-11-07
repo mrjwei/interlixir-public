@@ -1,0 +1,237 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "A3 event",
+  "description": "An event on the interlixir-bus custom bus, in the shape EventBridge delivers it to targets. EventBridge adds version, id, account, time, region and resources, so the envelope stays open; each detail is closed.",
+  "type": "object",
+  "required": [
+    "source",
+    "detail-type",
+    "detail"
+  ],
+  "properties": {
+    "source": {
+      "const": "interlixir.app"
+    },
+    "detail-type": {
+      "enum": [
+        "UploadReceived",
+        "TranscriptionDone",
+        "SynthesisDone",
+        "JobFailed",
+        "ChatSession",
+        "StageChanged",
+        "DeleteRequested",
+        "RetryRequested"
+      ]
+    },
+    "detail": {
+      "type": "object"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "required": ["detail-type"],
+        "properties": { "detail-type": { "const": "UploadReceived" } }
+      },
+      "then": { "properties": { "detail": { "$ref": "#/$defs/UploadReceived" } } }
+    },
+    {
+      "if": {
+        "required": ["detail-type"],
+        "properties": { "detail-type": { "const": "TranscriptionDone" } }
+      },
+      "then": { "properties": { "detail": { "$ref": "#/$defs/TranscriptionDone" } } }
+    },
+    {
+      "if": {
+        "required": ["detail-type"],
+        "properties": { "detail-type": { "const": "SynthesisDone" } }
+      },
+      "then": { "properties": { "detail": { "$ref": "#/$defs/SynthesisDone" } } }
+    },
+    {
+      "if": {
+        "required": ["detail-type"],
+        "properties": { "detail-type": { "const": "JobFailed" } }
+      },
+      "then": { "properties": { "detail": { "$ref": "#/$defs/JobFailed" } } }
+    },
+    {
+      "if": {
+        "required": ["detail-type"],
+        "properties": { "detail-type": { "const": "ChatSession" } }
+      },
+      "then": { "properties": { "detail": { "$ref": "#/$defs/ChatSession" } } }
+    },
+    {
+      "if": {
+        "required": ["detail-type"],
+        "properties": { "detail-type": { "const": "StageChanged" } }
+      },
+      "then": { "properties": { "detail": { "$ref": "#/$defs/StageChanged" } } }
+    },
+    {
+      "if": {
+        "required": ["detail-type"],
+        "properties": { "detail-type": { "const": "DeleteRequested" } }
+      },
+      "then": { "properties": { "detail": { "$ref": "#/$defs/DeleteRequested" } } }
+    },
+    {
+      "if": {
+        "required": ["detail-type"],
+        "properties": { "detail-type": { "const": "RetryRequested" } }
+      },
+      "then": { "properties": { "detail": { "$ref": "#/$defs/RetryRequested" } } }
+    }
+  ],
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{1,128}$",
+      "description": "IDs end up in DynamoDB keys (PROJECT#<id>) and S3 keys, so no '#' or '/'."
+    },
+    "occurredAt": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$",
+      "description": "UTC, millisecond precision, fixed width (2026-10-15T01:02:03.456Z), so EVENT#<occurredAt>#<eventId> sort keys order by time."
+    },
+    "stage": {
+      "enum": ["Queued", "Transcribing", "Redacting", "Synthesising", "Done", "Failed"]
+    },
+    "tokenCount": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Bedrock input + output tokens."
+    },
+    "cost": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Estimated cost in USD (M21 price table)."
+    },
+    "UploadReceived": {
+      "description": "The job creator accepted an upload and queued its chunks. History event.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["eventId", "userId", "occurredAt", "jobId"],
+      "properties": {
+        "eventId": { "$ref": "#/$defs/id" },
+        "userId": { "$ref": "#/$defs/id" },
+        "occurredAt": { "$ref": "#/$defs/occurredAt" },
+        "jobId": { "$ref": "#/$defs/id" }
+      }
+    },
+    "TranscriptionDone": {
+      "description": "The last chunk of a job was transcribed (the G8 winner). History event.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["eventId", "userId", "occurredAt", "jobId"],
+      "properties": {
+        "eventId": { "$ref": "#/$defs/id" },
+        "userId": { "$ref": "#/$defs/id" },
+        "occurredAt": { "$ref": "#/$defs/occurredAt" },
+        "jobId": { "$ref": "#/$defs/id" }
+      }
+    },
+    "SynthesisDone": {
+      "description": "Synthesis stored the document and set the job Done. History event.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["eventId", "userId", "occurredAt", "jobId", "tokenCount", "cost"],
+      "properties": {
+        "eventId": { "$ref": "#/$defs/id" },
+        "userId": { "$ref": "#/$defs/id" },
+        "occurredAt": { "$ref": "#/$defs/occurredAt" },
+        "jobId": { "$ref": "#/$defs/id" },
+        "tokenCount": { "$ref": "#/$defs/tokenCount" },
+        "cost": { "$ref": "#/$defs/cost" }
+      }
+    },
+    "JobFailed": {
+      "description": "A job failed for good. stage is where it failed; tokens and cost are what it spent before failing, if any. History event.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["eventId", "userId", "occurredAt", "jobId", "stage"],
+      "properties": {
+        "eventId": { "$ref": "#/$defs/id" },
+        "userId": { "$ref": "#/$defs/id" },
+        "occurredAt": { "$ref": "#/$defs/occurredAt" },
+        "jobId": { "$ref": "#/$defs/id" },
+        "stage": { "enum": ["Queued", "Transcribing", "Redacting", "Synthesising"] },
+        "tokenCount": { "$ref": "#/$defs/tokenCount" },
+        "cost": { "$ref": "#/$defs/cost" }
+      }
+    },
+    "ChatSession": {
+      "description": "Chat usage, with tokens and cost. History event.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["eventId", "userId", "occurredAt", "chatSessionId", "tokenCount", "cost"],
+      "properties": {
+        "eventId": { "$ref": "#/$defs/id" },
+        "userId": { "$ref": "#/$defs/id" },
+        "occurredAt": { "$ref": "#/$defs/occurredAt" },
+        "chatSessionId": { "$ref": "#/$defs/id" },
+        "tokenCount": { "$ref": "#/$defs/tokenCount" },
+        "cost": { "$ref": "#/$defs/cost" }
+      }
+    },
+    "StageChanged": {
+      "description": "A pipeline service moved a job to a new stage. Control event, not history; no consumer yet.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["eventId", "userId", "occurredAt", "jobId", "stage"],
+      "properties": {
+        "eventId": { "$ref": "#/$defs/id" },
+        "userId": { "$ref": "#/$defs/id" },
+        "occurredAt": { "$ref": "#/$defs/occurredAt" },
+        "jobId": { "$ref": "#/$defs/id" },
+        "stage": { "$ref": "#/$defs/stage" }
+      }
+    },
+    "DeleteRequested": {
+      "description": "The stream router saw a Project or Document item removed. GC deletes what belonged to it. documentId is present exactly when entity is Document; jobId and recordingId (from the removed Document item) only then.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["eventId", "userId", "occurredAt", "entity", "projectId"],
+      "properties": {
+        "eventId": { "$ref": "#/$defs/id" },
+        "userId": { "$ref": "#/$defs/id" },
+        "occurredAt": { "$ref": "#/$defs/occurredAt" },
+        "entity": { "enum": ["Project", "Document"] },
+        "projectId": { "$ref": "#/$defs/id" },
+        "documentId": { "$ref": "#/$defs/id" },
+        "jobId": { "$ref": "#/$defs/id" },
+        "recordingId": { "$ref": "#/$defs/id" }
+      },
+      "if": {
+        "required": ["entity"],
+        "properties": { "entity": { "const": "Document" } }
+      },
+      "then": { "required": ["documentId"] },
+      "else": {
+        "allOf": [
+          { "not": { "required": ["documentId"] } },
+          { "not": { "required": ["jobId"] } },
+          { "not": { "required": ["recordingId"] } }
+        ]
+      }
+    },
+    "RetryRequested": {
+      "description": "The stream router saw a Job go Failed -> Queued. The job creator resumes it; projectId and recordingId let it find the Recording.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["eventId", "userId", "occurredAt", "jobId", "projectId", "recordingId", "retryCount"],
+      "properties": {
+        "eventId": { "$ref": "#/$defs/id" },
+        "userId": { "$ref": "#/$defs/id" },
+        "occurredAt": { "$ref": "#/$defs/occurredAt" },
+        "jobId": { "$ref": "#/$defs/id" },
+        "projectId": { "$ref": "#/$defs/id" },
+        "recordingId": { "$ref": "#/$defs/id" },
+        "retryCount": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}

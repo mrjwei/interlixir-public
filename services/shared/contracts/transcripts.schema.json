@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "A3 chunk transcript",
+  "description": "One chunk's transcript at transcripts/<userId>/<jobId>/chunks/<chunk>.json in the uploads bucket. Producer: Whisper worker. Consumer: synthesis, which merges the chunks in order of chunk. Times are seconds from the start of the recording, not the chunk. Validate with transcripts.validate_transcript(body). Closed, so a new field means a schema change first.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["jobId", "chunk", "startSeconds", "model", "language", "audioSeconds", "text", "segments"],
+  "properties": {
+    "jobId": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" },
+    "chunk": { "type": "integer", "minimum": 0 },
+    "startSeconds": { "type": "integer", "minimum": 0, "description": "Where the chunk starts in the recording (from the TranscriptionChunk message)" },
+    "model": { "type": "string", "minLength": 1, "description": "The checkpoint that produced it, e.g. distil-small.en" },
+    "language": { "const": "en", "description": "English only" },
+    "audioSeconds": { "type": "number", "minimum": 0, "description": "Length of the chunk's audio" },
+    "text": { "type": "string", "description": "The segments' text joined with spaces; empty for a silent chunk" },
+    "segments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["start", "end", "text"],
+        "properties": {
+          "start": { "type": "number", "minimum": 0 },
+          "end": { "type": "number", "minimum": 0 },
+          "text": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

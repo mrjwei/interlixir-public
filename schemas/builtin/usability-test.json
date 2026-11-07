@@ -1,0 +1,189 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Usability test (think-aloud)",
+  "description": "Task-by-task results, usability issues rated by severity, what worked well and recommended fixes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "summary",
+    "participantProfile",
+    "tasks",
+    "issues",
+    "positives",
+    "notableQuotes"
+  ],
+  "properties": {
+    "summary": {
+      "type": "string",
+      "description": "Three to five sentences on what the session covered and what matters most."
+    },
+    "participantProfile": {
+      "type": "string",
+      "description": "Relevant background: experience with the product or domain, device, assistive technology. No identifying details."
+    },
+    "tasks": {
+      "type": "array",
+      "description": "One entry per task, in the order attempted.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "task",
+          "outcome",
+          "observations",
+          "evidence"
+        ],
+        "properties": {
+          "task": {
+            "type": "string",
+            "description": "What the participant was asked to do."
+          },
+          "outcome": {
+            "type": "string",
+            "description": "How the attempt ended.",
+            "enum": [
+              "completed",
+              "completed_with_difficulty",
+              "failed",
+              "not_attempted"
+            ]
+          },
+          "observations": {
+            "type": "string",
+            "description": "What the participant did and said while attempting it."
+          },
+          "evidence": {
+            "type": "array",
+            "description": "Think-aloud quotes from this task. At most 3.",
+            "maxItems": 3,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "speaker",
+                "text"
+              ],
+              "properties": {
+                "speaker": {
+                  "type": "string",
+                  "description": "Pseudonym of the speaker, e.g. \"Participant 1\"."
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Verbatim from the redacted transcript."
+                },
+                "timestamp": {
+                  "type": "string",
+                  "description": "Approximate position in the recording (mm:ss or h:mm:ss), if known.",
+                  "pattern": "^\\d{1,2}:\\d{2}(:\\d{2})?$"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "issues": {
+      "type": "array",
+      "description": "Usability issues, most severe first.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "issue",
+          "severity",
+          "location",
+          "evidence",
+          "recommendation"
+        ],
+        "properties": {
+          "issue": {
+            "type": "string",
+            "description": "The problem, stated from the user's point of view."
+          },
+          "severity": {
+            "type": "string",
+            "description": "Critical blocks the task; major causes significant delay or errors; minor is an annoyance; cosmetic has no effect on success.",
+            "enum": [
+              "critical",
+              "major",
+              "minor",
+              "cosmetic"
+            ]
+          },
+          "location": {
+            "type": "string",
+            "description": "Screen, page or component where it happened."
+          },
+          "evidence": {
+            "type": "array",
+            "description": "Quotes showing the issue. At most 3.",
+            "maxItems": 3,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "speaker",
+                "text"
+              ],
+              "properties": {
+                "speaker": {
+                  "type": "string",
+                  "description": "Pseudonym of the speaker, e.g. \"Participant 1\"."
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Verbatim from the redacted transcript."
+                },
+                "timestamp": {
+                  "type": "string",
+                  "description": "Approximate position in the recording (mm:ss or h:mm:ss), if known.",
+                  "pattern": "^\\d{1,2}:\\d{2}(:\\d{2})?$"
+                }
+              }
+            }
+          },
+          "recommendation": {
+            "type": "string",
+            "description": "A concrete fix."
+          }
+        }
+      }
+    },
+    "positives": {
+      "type": "array",
+      "description": "What worked well and should be kept.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "notableQuotes": {
+      "type": "array",
+      "description": "The most telling quotes, most telling first. At most 10.",
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "speaker",
+          "text"
+        ],
+        "properties": {
+          "speaker": {
+            "type": "string",
+            "description": "Pseudonym of the speaker, e.g. \"Participant 1\"."
+          },
+          "text": {
+            "type": "string",
+            "description": "Verbatim from the redacted transcript."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Approximate position in the recording (mm:ss or h:mm:ss), if known.",
+            "pattern": "^\\d{1,2}:\\d{2}(:\\d{2})?$"
+          }
+        }
+      }
+    }
+  }
+}

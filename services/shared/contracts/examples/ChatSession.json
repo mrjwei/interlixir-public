@@ -1,0 +1,18 @@
+{
+  "version": "0",
+  "id": "c8b51e09-2a74-4f3d-86c2-d1e0a9b7f523",
+  "detail-type": "ChatSession",
+  "source": "interlixir.app",
+  "account": "123456789012",
+  "time": "2026-10-15T01:02:03Z",
+  "region": "ap-southeast-2",
+  "resources": [],
+  "detail": {
+    "eventId": "evt-chatsession",
+    "userId": "3c1d5a2e-7f40-4b8e-9a61-2d9e8b0f4c17",
+    "occurredAt": "2026-10-15T01:02:03.456Z",
+    "chatSessionId": "01JA3N2K3L4M5N6P7Q8R9S0T1V",
+    "tokenCount": 4200,
+    "cost": 0.0055
+  }
+}

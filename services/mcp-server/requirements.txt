@@ -1,0 +1,5 @@
+# Runtime dependencies of the MCP server image (Python 3.14, linux/arm64).
+mcp==2.3.0
+uvicorn==0.54.0
+boto3==1.43.114
+pyjwt[crypto]==2.15.1

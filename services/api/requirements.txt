@@ -1,0 +1,6 @@
+# Runtime dependencies of the API image (Python 3.14, linux/arm64).
+fastapi==0.143.1
+uvicorn==0.54.0
+boto3==1.43.114
+pyjwt[crypto]==2.15.1
+pymemcache==4.0.0

@@ -1,0 +1,7 @@
+.venv/
+tests/
+**/__pycache__/
+requirements-dev.txt
+README.md
+bench.py
+models/

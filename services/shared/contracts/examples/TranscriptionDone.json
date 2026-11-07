@@ -1,0 +1,16 @@
+{
+  "version": "0",
+  "id": "1b7e4d22-95c0-4f6a-b3e8-0c2a91d5e647",
+  "detail-type": "TranscriptionDone",
+  "source": "interlixir.app",
+  "account": "123456789012",
+  "time": "2026-10-15T01:02:03Z",
+  "region": "ap-southeast-2",
+  "resources": [],
+  "detail": {
+    "eventId": "evt-transcriptiondone",
+    "userId": "3c1d5a2e-7f40-4b8e-9a61-2d9e8b0f4c17",
+    "occurredAt": "2026-10-15T01:02:03.456Z",
+    "jobId": "01JA3M8Q2V7K9XG4T5N6P1R2S3"
+  }
+}

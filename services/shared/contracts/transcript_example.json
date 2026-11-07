@@ -1,0 +1,13 @@
+{
+  "jobId": "01a13e4f-e79a-737d-8c36-3ac634026915",
+  "chunk": 2,
+  "startSeconds": 600,
+  "model": "distil-small.en",
+  "language": "en",
+  "audioSeconds": 300.0,
+  "text": "Could you walk me through what happened when you tried to change your delivery address? Honestly, the first thing I noticed was that the search bar was hidden.",
+  "segments": [
+    { "start": 601.12, "end": 605.84, "text": "Could you walk me through what happened when you tried to change your delivery address?" },
+    { "start": 606.3, "end": 610.02, "text": "Honestly, the first thing I noticed was that the search bar was hidden." }
+  ]
+}

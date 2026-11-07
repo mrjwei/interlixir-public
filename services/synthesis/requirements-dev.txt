@@ -1,0 +1,4 @@
+# Tests only: make venv-synthesis, then make test-synthesis.
+-r requirements.txt
+boto3==1.43.114
+moto[dynamodb,s3,sqs]==5.2.4

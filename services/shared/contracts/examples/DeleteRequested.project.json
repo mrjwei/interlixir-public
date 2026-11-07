@@ -1,0 +1,17 @@
+{
+  "version": "0",
+  "id": "e93f6b28-4c01-4a7d-b5e9-8d2c3a1f0b64",
+  "detail-type": "DeleteRequested",
+  "source": "interlixir.app",
+  "account": "123456789012",
+  "time": "2026-10-15T01:02:03Z",
+  "region": "ap-southeast-2",
+  "resources": [],
+  "detail": {
+    "eventId": "evt-deleterequested-project",
+    "userId": "3c1d5a2e-7f40-4b8e-9a61-2d9e8b0f4c17",
+    "occurredAt": "2026-10-15T01:02:03.456Z",
+    "entity": "Project",
+    "projectId": "01JA3M7Z0B6H8C2D4E5F6G7H8J"
+  }
+}

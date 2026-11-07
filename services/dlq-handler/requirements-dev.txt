@@ -1,0 +1,4 @@
+# Tests only: make venv-dlq-handler, then make test-dlq-handler. The Lambda runtime has boto3 already.
+boto3==1.43.114
+moto[dynamodb]==5.2.4
+jsonschema==4.26.0

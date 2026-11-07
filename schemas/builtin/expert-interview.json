@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Expert interview",
+  "description": "The expert's key insights with rationale and confidence, trends, risks, recommendations, references and follow-up questions.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "summary",
+    "expertProfile",
+    "insights",
+    "trends",
+    "risks",
+    "recommendations",
+    "references",
+    "followUpQuestions"
+  ],
+  "properties": {
+    "summary": {
+      "type": "string",
+      "description": "Three to five sentences on what the session covered and what matters most."
+    },
+    "expertProfile": {
+      "type": "string",
+      "description": "Field of expertise and relevant experience, without identifying details such as employer names."
+    },
+    "insights": {
+      "type": "array",
+      "description": "Key insights, most important first. At most 10.",
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "insight",
+          "rationale",
+          "confidence",
+          "evidence"
+        ],
+        "properties": {
+          "insight": {
+            "type": "string",
+            "description": "The claim or lesson."
+          },
+          "rationale": {
+            "type": "string",
+            "description": "The reasoning or experience behind it."
+          },
+          "confidence": {
+            "type": "string",
+            "description": "How strongly the expert stated it.",
+            "enum": [
+              "speculative",
+              "informed_opinion",
+              "firm_view"
+            ]
+          },
+          "evidence": {
+            "type": "array",
+            "description": "Quotes that support it. At most 2.",
+            "maxItems": 2,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "speaker",
+                "text"
+              ],
+              "properties": {
+                "speaker": {
+                  "type": "string",
+                  "description": "Pseudonym of the speaker, e.g. \"Participant 1\"."
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Verbatim from the redacted transcript."
+                },
+                "timestamp": {
+                  "type": "string",
+                  "description": "Approximate position in the recording (mm:ss or h:mm:ss), if known.",
+                  "pattern": "^\\d{1,2}:\\d{2}(:\\d{2})?$"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "trends": {
+      "type": "array",
+      "description": "Trends or predictions the expert described.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "risks": {
+      "type": "array",
+      "description": "Risks, challenges or common mistakes the expert warned about.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "recommendations": {
+      "type": "array",
+      "description": "What the expert recommends doing.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "references": {
+      "type": "array",
+      "description": "Sources, tools, standards or people mentioned as worth following up (no personal contact details).",
+      "items": {
+        "type": "string"
+      }
+    },
+    "followUpQuestions": {
+      "type": "array",
+      "description": "Questions worth asking next time.",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

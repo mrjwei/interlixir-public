@@ -1,0 +1,401 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/geist';
+@import '@fontsource/playfair-display/400.css';
+@import '@fontsource/playfair-display/400-italic.css';
+@import '@fontsource-variable/jetbrains-mono';
+
+/* The Stillwater design system (web/DESIGN.md) on the shadcn token contract. Every colour below is a
+   semantic alias; components never use raw greys or hex. `.dark` on <html> flips them all. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: oklch(0.9764 0.0013 286.3755);
+  --foreground: oklch(0.2593 0.0259 248.858);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.2593 0.0259 248.858);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.2593 0.0259 248.858);
+  --primary: oklch(0.4721 0.0927 237.7893);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.948 0.0063 255.4758);
+  --secondary-foreground: oklch(0.2593 0.0259 248.858);
+  --muted: oklch(0.948 0.0063 255.4758);
+  --muted-foreground: oklch(0.5025 0.0261 254.5164);
+  --accent: oklch(0.9175 0.0177 234.5132);
+  --accent-foreground: oklch(0.3818 0.0757 237.4085);
+  --destructive: oklch(0.5413 0.155 26.0539);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.9046 0.0098 252.8166);
+  --input: oklch(0.9046 0.0098 252.8166);
+  --ring: oklch(0.5051 0.0989 237.3787);
+  --sidebar: oklch(0.9635 0.0045 258.3247);
+  --sidebar-border: oklch(0.9046 0.0098 252.8166);
+  --overlay: rgb(0 0 0 / 0.5);
+
+  --chart-1: oklch(0.5051 0.0989 237.3787);
+  --chart-2: oklch(0.7893 0.0828 232.7839);
+  --chart-3: oklch(0.389 0.0736 237.0031);
+  --chart-4: oklch(0.5239 0.0887 163.8679);
+  --chart-5: oklch(0.7479 0.1214 76.0688);
+
+  /* Status hues come from the palette (DESIGN.md, Colors); they follow the chart and primary values per mode. */
+  --success: var(--chart-4);
+  --warning: var(--chart-5);
+  --info: var(--primary);
+
+  /* Status text that reaches 4.5:1 at 12px (DESIGN.md, Accessibility). */
+  --success-fg: color-mix(in oklab, var(--success) 86%, black);
+  --warning-fg: color-mix(in oklab, var(--warning) 70%, black);
+  --info-fg: color-mix(in oklab, var(--info) 87%, black);
+
+  --shadow-xs: 0 1px 4px -1px hsl(210 30% 15% / 0.03);
+  --shadow-sm: 0 1px 4px -1px hsl(210 30% 15% / 0.05), 0 1px 2px -2px hsl(210 30% 15% / 0.05);
+  --shadow-lg: 0 1px 4px -1px hsl(210 30% 15% / 0.05), 0 4px 6px -2px hsl(210 30% 15% / 0.05);
+  --shadow-xl: 0 1px 4px -1px hsl(210 30% 15% / 0.05), 0 8px 10px -2px hsl(210 30% 15% / 0.05);
+}
+
+.dark {
+  --background: oklch(0.1884 0.0128 248.5103);
+  --foreground: oklch(0.9324 0.008 253.8552);
+  --card: oklch(0.2241 0.0181 255.71);
+  --card-foreground: oklch(0.9324 0.008 253.8552);
+  --popover: oklch(0.2539 0.0216 257.2811);
+  --popover-foreground: oklch(0.9324 0.008 253.8552);
+  --primary: oklch(0.7313 0.0733 235.1459);
+  --primary-foreground: oklch(0.1884 0.0128 248.5103);
+  --secondary: oklch(0.2654 0.022 254.2034);
+  --secondary-foreground: oklch(0.9324 0.008 253.8552);
+  --muted: oklch(0.2654 0.022 254.2034);
+  --muted-foreground: oklch(0.6498 0.0271 257.6665);
+  --accent: oklch(0.2654 0.022 254.2034);
+  --accent-foreground: oklch(0.833 0.0499 230.3705);
+  --destructive: oklch(0.6657 0.1387 24.1829);
+  /* Light text on the dark-mode red is 3.2:1; ink (the background) is 5.7:1. */
+  --destructive-foreground: var(--background);
+  --border: oklch(0.31 0.025 255.71);
+  --input: oklch(0.31 0.025 255.71);
+  --ring: oklch(0.7313 0.0733 235.1459);
+  --sidebar: oklch(0.1665 0.0124 254.1679);
+  --sidebar-border: oklch(0.2654 0.022 254.2034);
+  --overlay: rgb(0 0 0 / 0.7);
+  --chart-1: oklch(0.7313 0.0733 235.1459);
+  --chart-2: oklch(0.833 0.0499 230.3705);
+  --chart-3: oklch(0.6848 0.0943 235.3912);
+  --chart-4: oklch(0.682 0.105 161.3021);
+  --chart-5: oklch(0.7963 0.121 77.1414);
+  --success-fg: color-mix(in oklab, var(--success) 70%, white);
+  --warning-fg: var(--warning);
+  --info-fg: color-mix(in oklab, var(--info) 80%, white);
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 12px 24px -4px rgb(0 0 0 / 0.6);
+  --shadow-xl: 0 24px 48px -8px rgb(0 0 0 / 0.7);
+}
+
+@theme inline {
+  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Playfair Display', ui-serif, Georgia, serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-fg: var(--success-fg);
+  --color-warning: var(--warning);
+  --color-warning-fg: var(--warning-fg);
+  --color-info: var(--info);
+  --color-info-fg: var(--info-fg);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-overlay: var(--overlay);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  html {
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+  body {
+    margin: 0;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: 'cv01', 'ss01';
+  }
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+@utility focus-ring {
+  outline: none;
+  &:focus-visible {
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+    border-color: var(--ring);
+  }
+}
+
+@utility tint-success {
+  background: color-mix(in oklab, var(--success) 14%, var(--card));
+  color: var(--success-fg);
+  border-color: color-mix(in oklab, var(--success) 30%, transparent);
+}
+@utility tint-info {
+  background: color-mix(in oklab, var(--info) 12%, var(--card));
+  color: var(--info-fg);
+  border-color: color-mix(in oklab, var(--info) 30%, transparent);
+}
+@utility tint-warning {
+  background: color-mix(in oklab, var(--warning) 16%, var(--card));
+  color: var(--warning-fg);
+  border-color: color-mix(in oklab, var(--warning) 35%, transparent);
+}
+@utility tint-destructive {
+  background: color-mix(in oklab, var(--destructive) 12%, var(--card));
+  color: var(--destructive);
+  border-color: color-mix(in oklab, var(--destructive) 30%, transparent);
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0s !important;
+    transition-duration: 0s !important;
+  }
+}
+
+/* Long-form reading: the synthesised Markdown document. */
+.prose-doc {
+  font-size: 16px;
+  line-height: 1.7;
+  max-width: 72ch;
+  overflow-wrap: anywhere;
+}
+.prose-doc > :first-child {
+  margin-top: 0;
+}
+.prose-doc h1,
+.prose-doc h2,
+.prose-doc h3,
+.prose-doc h4 {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  margin: 1.8em 0 0.6em;
+}
+.prose-doc h1 {
+  font-size: 30px;
+}
+.prose-doc h2 {
+  font-size: 24px;
+}
+.prose-doc h3 {
+  font-size: 20px;
+}
+.prose-doc h4 {
+  font-size: 16px;
+}
+.prose-doc p,
+.prose-doc ul,
+.prose-doc ol,
+.prose-doc blockquote,
+.prose-doc pre {
+  margin: 0 0 1em;
+}
+.prose-doc ul,
+.prose-doc ol {
+  padding-left: 1.4em;
+}
+.prose-doc ul {
+  list-style: disc;
+}
+.prose-doc ol {
+  list-style: decimal;
+}
+.prose-doc li {
+  margin: 0.3em 0;
+}
+.prose-doc strong {
+  font-weight: 600;
+}
+.prose-doc a {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.prose-doc blockquote {
+  border-left: 3px solid var(--primary);
+  padding-left: 1em;
+  color: var(--foreground);
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-style: italic;
+  line-height: 1.5;
+}
+.prose-doc code {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  background: var(--secondary);
+  border-radius: 6px;
+  padding: 0.1em 0.35em;
+}
+.prose-doc pre {
+  background: var(--secondary);
+  border-radius: 8px;
+  padding: 12px 16px;
+  overflow-x: auto;
+}
+.prose-doc pre code {
+  background: none;
+  padding: 0;
+}
+.prose-doc hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 2em 0;
+}
+.prose-doc table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin: 0 0 1.2em;
+  display: block;
+  overflow-x: auto;
+}
+.prose-doc th {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.prose-doc td {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  vertical-align: top;
+}
+
+/* Chat answers (the Ask AI panel): the document's prose, at panel size. */
+.prose-chat {
+  font-size: 15px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.prose-chat > :first-child {
+  margin-top: 0;
+}
+.prose-chat > :last-child {
+  margin-bottom: 0;
+}
+.prose-chat p,
+.prose-chat ul,
+.prose-chat ol,
+.prose-chat blockquote,
+.prose-chat pre {
+  margin: 0 0 0.75em;
+}
+.prose-chat h1,
+.prose-chat h2,
+.prose-chat h3,
+.prose-chat h4 {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 1em 0 0.4em;
+}
+.prose-chat ul,
+.prose-chat ol {
+  padding-left: 1.3em;
+}
+.prose-chat ul {
+  list-style: disc;
+}
+.prose-chat ol {
+  list-style: decimal;
+}
+.prose-chat li {
+  margin: 0.25em 0;
+}
+.prose-chat strong {
+  font-weight: 600;
+}
+.prose-chat blockquote {
+  border-left: 3px solid var(--primary);
+  padding-left: 0.8em;
+  color: var(--foreground);
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-style: italic;
+  line-height: 1.45;
+}
+.prose-chat code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background: var(--secondary);
+  border-radius: 6px;
+  padding: 0.1em 0.3em;
+}
+.prose-chat table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 0 0 0.75em;
+}
+.prose-chat th,
+.prose-chat td {
+  text-align: left;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}

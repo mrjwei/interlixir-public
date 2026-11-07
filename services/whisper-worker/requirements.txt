@@ -1,0 +1,5 @@
+# Runtime dependencies of the Whisper worker image (Python 3.14, linux/arm64). ctranslate2 is the inference
+# engine faster-whisper runs on; pinned too, since it decides the speed.
+faster-whisper==1.2.1
+ctranslate2==4.8.3
+boto3==1.43.114

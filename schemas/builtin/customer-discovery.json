@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Customer discovery call",
+  "description": "The customer's context, current solution, problems with frequency and severity, jobs to be done, buying signals and next steps.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "summary",
+    "customerProfile",
+    "currentSolution",
+    "problems",
+    "jobsToBeDone",
+    "willingnessToPay",
+    "decisionProcess",
+    "objections",
+    "notableQuotes",
+    "nextSteps"
+  ],
+  "properties": {
+    "summary": {
+      "type": "string",
+      "description": "Three to five sentences on what the session covered and what matters most."
+    },
+    "customerProfile": {
+      "type": "string",
+      "description": "Job role, industry or customer segment, and the approximate size of the organisation if mentioned. No names."
+    },
+    "currentSolution": {
+      "type": "string",
+      "description": "How they solve the problem today (tools, processes, people) and what it costs them."
+    },
+    "problems": {
+      "type": "array",
+      "description": "Problems mentioned, most severe first.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "problem",
+          "frequency",
+          "severity",
+          "evidence"
+        ],
+        "properties": {
+          "problem": {
+            "type": "string",
+            "description": "The problem in the customer's terms."
+          },
+          "frequency": {
+            "type": "string",
+            "description": "How often it happens, if stated."
+          },
+          "severity": {
+            "type": "string",
+            "description": "How much it hurts, judged from the evidence.",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "evidence": {
+            "type": "array",
+            "description": "Quotes that show the problem. At most 3.",
+            "maxItems": 3,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "speaker",
+                "text"
+              ],
+              "properties": {
+                "speaker": {
+                  "type": "string",
+                  "description": "Pseudonym of the speaker, e.g. \"Participant 1\"."
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Verbatim from the redacted transcript."
+                },
+                "timestamp": {
+                  "type": "string",
+                  "description": "Approximate position in the recording (mm:ss or h:mm:ss), if known.",
+                  "pattern": "^\\d{1,2}:\\d{2}(:\\d{2})?$"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "jobsToBeDone": {
+      "type": "array",
+      "description": "What the customer is ultimately trying to achieve.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "willingnessToPay": {
+      "type": "string",
+      "description": "Budget, price expectations or spend on current solutions. \"not discussed\" if absent."
+    },
+    "decisionProcess": {
+      "type": "string",
+      "description": "Who decides and how purchases are made. \"not discussed\" if absent."
+    },
+    "objections": {
+      "type": "array",
+      "description": "Concerns, blockers or reasons not to buy.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "notableQuotes": {
+      "type": "array",
+      "description": "The most telling quotes, most telling first. At most 10.",
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "speaker",
+          "text"
+        ],
+        "properties": {
+          "speaker": {
+            "type": "string",
+            "description": "Pseudonym of the speaker, e.g. \"Participant 1\"."
+          },
+          "text": {
+            "type": "string",
+            "description": "Verbatim from the redacted transcript."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Approximate position in the recording (mm:ss or h:mm:ss), if known.",
+            "pattern": "^\\d{1,2}:\\d{2}(:\\d{2})?$"
+          }
+        }
+      }
+    },
+    "nextSteps": {
+      "type": "array",
+      "description": "Agreed follow-ups and open hypotheses to test.",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

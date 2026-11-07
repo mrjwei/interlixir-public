@@ -1,0 +1,4 @@
+# Tests only: make venv-gc, then make test-gc. The Lambda runtime has boto3 already.
+boto3==1.43.114
+moto[dynamodb,s3]==5.2.4
+jsonschema==4.26.0

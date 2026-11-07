@@ -1,0 +1,4 @@
+# Tests: make venv-api, then make test-api.
+-r requirements.txt
+httpx2==2.13.1
+moto[dynamodb,s3]==5.2.4

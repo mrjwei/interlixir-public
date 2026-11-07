@@ -1,0 +1,18 @@
+{
+  "version": "0",
+  "id": "a0d93c51-7e28-4b16-9f04-3e6b2c8d1a75",
+  "detail-type": "SynthesisDone",
+  "source": "interlixir.app",
+  "account": "123456789012",
+  "time": "2026-10-15T01:02:03Z",
+  "region": "ap-southeast-2",
+  "resources": [],
+  "detail": {
+    "eventId": "evt-synthesisdone",
+    "userId": "3c1d5a2e-7f40-4b8e-9a61-2d9e8b0f4c17",
+    "occurredAt": "2026-10-15T01:02:03.456Z",
+    "jobId": "01JA3M8Q2V7K9XG4T5N6P1R2S3",
+    "tokenCount": 31250,
+    "cost": 0.0412
+  }
+}

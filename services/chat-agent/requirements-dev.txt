@@ -1,0 +1,6 @@
+# Tests: make venv-chat, then make test-mcp-server and make test-chat-agent. One venv for both services: the
+# agent's tests run the real MCP server in-process.
+-r requirements.txt
+-r ../mcp-server/requirements.txt
+moto[dynamodb,s3,events]==5.2.4
+jsonschema==4.26.0

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "A3 queue messages",
+  "description": "SQS message bodies between pipeline stages. Each body is one of the $defs, named by its queue; validate with messages.validate_message(name, body). Closed, so a new field means a schema change first.",
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{1,128}$",
+      "description": "Same as the event contract: IDs go into DynamoDB and S3 keys, so no '#' or '/'."
+    },
+    "TranscriptionChunk": {
+      "description": "One chunk to transcribe, on interlixir-transcription. Producer: job creator. Consumer: Whisper worker. The audio is at chunks/<jobId>/<chunk>.wav and the worker writes transcripts/<userId>/<jobId>/chunks/<chunk>.json. chunksTotal travels with the message so the G8 'last chunk' check never depends on the order of the job creator's writes.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["jobId", "userId", "chunk", "chunksTotal", "startSeconds"],
+      "properties": {
+        "jobId": { "$ref": "#/$defs/id" },
+        "userId": { "$ref": "#/$defs/id" },
+        "chunk": { "type": "integer", "minimum": 0, "description": "0-based; also the chunk's file name" },
+        "chunksTotal": { "type": "integer", "minimum": 1 },
+        "startSeconds": { "type": "integer", "minimum": 0, "description": "Offset of the chunk in the recording, for transcript timestamps" }
+      }
+    },
+    "SynthesisRequest": {
+      "description": "A job whose transcripts are all written, on interlixir-synthesis. Producers: the G8 winner, and the job creator when a retry finds every transcript. Consumer: synthesis. Whoever sends it has won the conditional SET synthesisEnqueued first.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["jobId", "userId"],
+      "properties": {
+        "jobId": { "$ref": "#/$defs/id" },
+        "userId": { "$ref": "#/$defs/id" }
+      }
+    }
+  }
+}

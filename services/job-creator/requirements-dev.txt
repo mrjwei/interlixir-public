@@ -1,0 +1,5 @@
+# Tests only: make venv-job-creator, then make test-job-creator. The Lambda runtime has boto3 already, and
+# media tests need ffmpeg/ffprobe on PATH (7.1.1 in the image; skipped if missing).
+boto3==1.43.114
+moto[dynamodb,s3]==5.2.4
+jsonschema==4.26.0

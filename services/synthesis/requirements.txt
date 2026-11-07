@@ -1,0 +1,4 @@
+# Bundled into the zip by scripts/build_lambda_zip.sh (arm64 Linux wheels for Python 3.14). boto3 is in the
+# Lambda runtime already.
+jsonschema==4.26.0
+pypdf==6.20.1

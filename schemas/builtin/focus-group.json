@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Focus group",
+  "description": "Discussion topics with the level of agreement, where the group agreed and disagreed, group dynamics and recommendations.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "summary",
+    "participants",
+    "topics",
+    "agreements",
+    "disagreements",
+    "groupDynamics",
+    "recommendations"
+  ],
+  "properties": {
+    "summary": {
+      "type": "string",
+      "description": "Three to five sentences on what the session covered and what matters most."
+    },
+    "participants": {
+      "type": "array",
+      "description": "Everyone who speaks, by pseudonym only. Speaker attribution is best effort: the transcript has no diarisation.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "pseudonym",
+          "profile"
+        ],
+        "properties": {
+          "pseudonym": {
+            "type": "string",
+            "description": "For example \"Participant 1\", or \"Interviewer\" for the moderator."
+          },
+          "profile": {
+            "type": "string",
+            "description": "Relevant background, without identifying details."
+          }
+        }
+      }
+    },
+    "topics": {
+      "type": "array",
+      "description": "Topics discussed, in order of importance. At most 10.",
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "topic",
+          "consensus",
+          "summary",
+          "evidence"
+        ],
+        "properties": {
+          "topic": {
+            "type": "string",
+            "description": "A short label."
+          },
+          "consensus": {
+            "type": "string",
+            "description": "How far the group agreed.",
+            "enum": [
+              "strong_agreement",
+              "mostly_agree",
+              "mixed",
+              "disagreement"
+            ]
+          },
+          "summary": {
+            "type": "string",
+            "description": "The main positions and the reasons given."
+          },
+          "evidence": {
+            "type": "array",
+            "description": "Quotes that represent the positions. At most 4.",
+            "maxItems": 4,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "speaker",
+                "text"
+              ],
+              "properties": {
+                "speaker": {
+                  "type": "string",
+                  "description": "Pseudonym of the speaker, e.g. \"Participant 1\"."
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Verbatim from the redacted transcript."
+                },
+                "timestamp": {
+                  "type": "string",
+                  "description": "Approximate position in the recording (mm:ss or h:mm:ss), if known.",
+                  "pattern": "^\\d{1,2}:\\d{2}(:\\d{2})?$"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "agreements": {
+      "type": "array",
+      "description": "Points most of the group agreed on.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "disagreements": {
+      "type": "array",
+      "description": "Points of tension, with the competing views.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "groupDynamics": {
+      "type": "string",
+      "description": "Dominant or quiet voices, influence between participants, moderator effects. Note anything that limits how far the findings generalise."
+    },
+    "recommendations": {
+      "type": "array",
+      "description": "Recommendations that follow from the discussion.",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

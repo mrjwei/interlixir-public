@@ -1,0 +1,80 @@
+# Runs the Makefile targets that need no AWS access (tests use moto). A failing check here is what
+# triggers Auto-fix on a PR. Never add deploy steps (push-*, zip-*, deploy-*) to this workflow.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python:
+    name: ${{ matrix.target }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # These three run on the system python3 and only need jsonschema.
+          - target: check-schemas
+          - target: test-contracts
+          - target: test-stream-router
+          # These run from their service's uv venv.
+          - target: test-api
+            venv: venv-api
+          - target: test-job-creator
+            venv: venv-job-creator
+            ffmpeg: true
+          - target: test-synthesis
+            venv: venv-synthesis
+          - target: test-dlq-handler
+            venv: venv-dlq-handler
+          - target: test-gc
+            venv: venv-gc
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+
+      - uses: astral-sh/setup-uv@v10.3.2  # this action publishes no floating major tag
+        if: matrix.venv
+
+      - name: Install jsonschema
+        if: ${{ !matrix.venv }}
+        run: python3 -m pip install jsonschema==4.26.0
+
+      # Without ffmpeg the media tests skip rather than fail.
+      - name: Install ffmpeg
+        if: matrix.ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+
+      - name: make ${{ matrix.venv }}
+        if: matrix.venv
+        run: make ${{ matrix.venv }}
+
+      - name: make ${{ matrix.target }}
+        run: make ${{ matrix.target }}
+
+  build-web:
+    name: build-web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: make build-web
+        run: make build-web

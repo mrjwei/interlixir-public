@@ -1,0 +1,4 @@
+# Tests and bench.py: make venv-whisper-worker, then make test-whisper-worker / make bench-whisper.
+-r requirements.txt
+moto[dynamodb,s3,sqs]==5.2.4
+jsonschema==4.26.0

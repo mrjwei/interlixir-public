@@ -1,0 +1,19 @@
+{
+  "version": "0",
+  "id": "4e2f8a17-c6b9-4d03-a5e1-7b9c0d2f6e84",
+  "detail-type": "JobFailed",
+  "source": "interlixir.app",
+  "account": "123456789012",
+  "time": "2026-10-15T01:02:03Z",
+  "region": "ap-southeast-2",
+  "resources": [],
+  "detail": {
+    "eventId": "evt-jobfailed",
+    "userId": "3c1d5a2e-7f40-4b8e-9a61-2d9e8b0f4c17",
+    "occurredAt": "2026-10-15T01:02:03.456Z",
+    "jobId": "01JA3M8Q2V7K9XG4T5N6P1R2S3",
+    "stage": "Synthesising",
+    "tokenCount": 28400,
+    "cost": 0.0371
+  }
+}

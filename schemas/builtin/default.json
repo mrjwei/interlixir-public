@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "General interview",
+  "description": "General-purpose synthesis for any research interview: summary, themes with evidence, pain points, opportunities and open questions.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "summary",
+    "participants",
+    "themes",
+    "painPoints",
+    "opportunities",
+    "notableQuotes",
+    "openQuestions"
+  ],
+  "properties": {
+    "summary": {
+      "type": "string",
+      "description": "Three to five sentences on what the session covered and what matters most."
+    },
+    "participants": {
+      "type": "array",
+      "description": "Everyone who speaks, by pseudonym only.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "pseudonym",
+          "role"
+        ],
+        "properties": {
+          "pseudonym": {
+            "type": "string",
+            "description": "For example \"Participant 1\" or \"Interviewer\"."
+          },
+          "role": {
+            "type": "string",
+            "description": "Role in the session or relevant background, without identifying details."
+          }
+        }
+      }
+    },
+    "themes": {
+      "type": "array",
+      "description": "Recurring topics, most important first. At most 8.",
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "theme",
+          "description",
+          "evidence"
+        ],
+        "properties": {
+          "theme": {
+            "type": "string",
+            "description": "A short label."
+          },
+          "description": {
+            "type": "string",
+            "description": "What was said about it and why it matters."
+          },
+          "evidence": {
+            "type": "array",
+            "description": "Quotes that support the theme. At most 3.",
+            "maxItems": 3,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "speaker",
+                "text"
+              ],
+              "properties": {
+                "speaker": {
+                  "type": "string",
+                  "description": "Pseudonym of the speaker, e.g. \"Participant 1\"."
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Verbatim from the redacted transcript."
+                },
+                "timestamp": {
+                  "type": "string",
+                  "description": "Approximate position in the recording (mm:ss or h:mm:ss), if known.",
+                  "pattern": "^\\d{1,2}:\\d{2}(:\\d{2})?$"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "painPoints": {
+      "type": "array",
+      "description": "Problems, frustrations or unmet needs the participant described.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "opportunities": {
+      "type": "array",
+      "description": "Ideas or recommendations that follow from the findings.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "notableQuotes": {
+      "type": "array",
+      "description": "The most telling quotes, most telling first. At most 10.",
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "speaker",
+          "text"
+        ],
+        "properties": {
+          "speaker": {
+            "type": "string",
+            "description": "Pseudonym of the speaker, e.g. \"Participant 1\"."
+          },
+          "text": {
+            "type": "string",
+            "description": "Verbatim from the redacted transcript."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Approximate position in the recording (mm:ss or h:mm:ss), if known.",
+            "pattern": "^\\d{1,2}:\\d{2}(:\\d{2})?$"
+          }
+        }
+      }
+    },
+    "openQuestions": {
+      "type": "array",
+      "description": "What remains unclear and is worth asking in a follow-up session.",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
