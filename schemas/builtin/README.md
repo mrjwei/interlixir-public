@@ -13,7 +13,7 @@ The six built-in synthesis schemas: one general default plus one per use case in
 
 ## Conventions
 
-- **Draft 2020-12** (`$schema` on every file). Python `jsonschema`'s `Draft202012Validator` validates output in M8 and meta-validates user schemas in M19.
+- **Draft 2020-12** (`$schema` on every file). Python `jsonschema`'s `Draft202012Validator` validates output in synthesis and meta-validates user-defined schemas.
 - **Portable subset**, because the same document is a Bedrock tool input schema and Nemotron's support for advanced keywords is untested: no `$ref`/`$defs`, no `oneOf`/`anyOf`/`allOf`/`not`/`if`. Shared shapes (the quote object) are inlined instead.
 - **Closed objects:** every object has `additionalProperties: false` and lists all its properties in `required` (the only optional field is a quote's `timestamp`). Absent information is an empty array or a phrase like "not discussed", not a missing key, so the renderer never has to guess.
 - **No object inside an object.** An object is the top level or a list's items, nothing else. Nemotron flattened a nested object (`customerProfile`, `buyingSignals`, `expertProfile`) onto the top level in 5 of 6 first attempts, so those became a string or top-level fields.

@@ -99,12 +99,12 @@ class RejectsTest(unittest.TestCase):
         self.assertInvalid(with_detail("DeleteRequested.project", documentId="01JA3MC4R5S6T7U8V9W0X1Y2Z3"))
 
     def test_project_delete_has_no_job_or_recording(self):
-        # M20: only a removed Document names its job and recording; GC finds a project's jobs through GSI1.
+        # only a removed Document names its job and recording; GC finds a project's jobs through GSI1.
         self.assertInvalid(with_detail("DeleteRequested.project", jobId="01JA3M8Q2V7K9XG4T5N6P1R2S3"))
         self.assertInvalid(with_detail("DeleteRequested.project", recordingId="01JA3M8P9W1X2Y3Z4A5B6C7D8E"))
 
     def test_document_delete_job_and_recording_are_optional(self):
-        # Documents written before M20 by an older synthesis may lack recordingId; GC reads it from the job then.
+        # Documents written earlier by an older synthesis may lack recordingId; GC reads it from the job then.
         events.validate_event(with_detail("DeleteRequested.document", jobId=None, recordingId=None))
 
     def test_retry_count_starts_at_one(self):

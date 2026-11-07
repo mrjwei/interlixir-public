@@ -1,5 +1,5 @@
-"""Projects: the sidebar list, create, rename, delete, and one project's contents (both reads cached for 10 s:
-M12). Uploads into a project are in uploads.py."""
+"""Projects: the sidebar list, create, rename, delete, and one project's contents (both reads cached for 10 s).
+Uploads into a project are in uploads.py."""
 
 from typing import Annotated
 

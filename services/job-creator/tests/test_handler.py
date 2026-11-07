@@ -368,7 +368,7 @@ class JobCreatorTest(Base):
 
 @unittest.skipUnless(shutil.which("ffmpeg") and shutil.which("ffprobe"), "ffmpeg/ffprobe not installed")
 class LogTest(Base):
-    """M16: the fields the trace query reads, and the metrics the dashboard reads."""
+    """the fields the trace query reads, and the metrics the dashboard reads."""
 
     def test_chunking_is_timed_and_names_the_job(self):
         with logs.capture() as records:

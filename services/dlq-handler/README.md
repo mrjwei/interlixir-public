@@ -20,34 +20,12 @@ Dead-letter handler. **Zip** Lambda (Python 3.14, arm64), **outside the VPC**, w
 - **The message is not kept.** A handled record is deleted from its DLQ. A record that can't be tied to a job (not JSON, the wrong shape, the job is gone) is **logged in full** (`dropped: …`, body up to 4,000 chars) and dropped. An AWS error leaves the record on the DLQ and it is tried again after the queue's 30 s visibility timeout.
 - `doneChunks` and the saved steps are left as they are: the retry reconciles them with S3.
 
-## Console settings
+## Deployment
 
 | Setting | Value |
 | --- | --- |
-| Code | `make zip-dlq-handler` → `dist/dlq-handler.zip`. Upload in the console (Code → Upload from → .zip file) |
-| Function | `interlixir-dlq-handler`, **Python 3.14**, **arm64**, handler **`handler.handler`** (set it **before** adding the triggers, see M8's pitfall), role `lambda-role`, no VPC, both tags |
-| Memory / timeout | 128 MB / **30 s** (= the DLQs' 30 s visibility timeout; Lambda refuses an SQS trigger whose queue visibility is shorter than the function timeout). Clients: 3 s connect, 5 s read, 3 attempts |
-| Environment | none (code defaults: table, uploads bucket, bus) |
-| Triggers | **Three** SQS triggers: `interlixir-upload-dlq`, `interlixir-transcription-dlq`, `interlixir-synthesis-dlq`. Batch size 10, batching window 0, **Report batch item failures** on, both tags on each mapping. Leave the DLQs' own settings as they are (no redrive on a DLQ) |
+| Function | `interlixir-dlq-handler`, Python 3.14, arm64, handler `handler.handler`, no VPC, no environment. Build with `make zip-dlq-handler` |
+| Memory / timeout | 128 MB / 30 s (Lambda refuses an SQS trigger whose queue visibility timeout is shorter than the function timeout, and the DLQs use 30 s) |
+| Triggers | Three SQS triggers: `interlixir-upload-dlq`, `interlixir-transcription-dlq`, `interlixir-synthesis-dlq`. Batch size 10, report batch item failures on |
 
-**DLQ alarm** (the M11 evidence "a DLQ alarm firing"; M16 adds it to the dashboard). CloudWatch → Alarms → Create alarm → Select metric → **Add math**:
-
-| Setting | Value |
-| --- | --- |
-| Metrics | `m1`, `m2`, `m3` = `AWS/SQS` `NumberOfMessagesReceived`, `QueueName` = the three DLQs above, statistic **Sum**, period **1 minute** |
-| Expression | `e1` = `FILL(m1, 0) + FILL(m2, 0) + FILL(m3, 0)` (a quiet queue publishes nothing; `FILL` stops the sum from going missing), label "Dead letters received". Alarm on `e1` only |
-| Condition | **Greater than or equal to 1**, 1 out of 1 datapoints, missing data **not breaching** |
-| Actions | none (SNS isn't available, the design): the state change is the evidence (alarm History tab) |
-| Name / tags | `interlixir-dead-letters`, both tags |
-
-Why `NumberOfMessagesReceived` and not the queue depth: the handler takes a dead letter within seconds, so `ApproximateNumberOfMessagesVisible` (sampled once a minute) would often read 0. Every dead letter is received at least once by the handler, so the received count can't miss one.
-
-Read-only checks after creating it:
-- `aws lambda get-function-configuration --function-name interlixir-dlq-handler --query '{h:Handler,t:Timeout,m:MemorySize,a:Architectures,r:Role}'`
-- `aws lambda list-event-source-mappings --function-name interlixir-dlq-handler --query 'EventSourceMappings[].{q:EventSourceArn,s:State,b:BatchSize,f:FunctionResponseTypes}'`
-- `aws cloudwatch describe-alarms --alarm-names interlixir-dead-letters --query 'MetricAlarms[].{s:StateValue,m:Metrics[].Id}'`
-- `aws lambda get-function --function-name interlixir-dlq-handler --query Tags` (check the keys have no stray spaces)
-
-**Deployed 2026-10-18** as above (read back in the build logs). The M8 job whose commit was denied (`ConditionCheckItem`) had already been redriven to `Done` with the fixed synthesis, so all three DLQs were empty when the triggers went on, and the handler hasn't run yet (no log group). Its first run is `make check-failures`' `forced` scenario, which also gives the "retry succeeding" evidence.
-
-Milestone: **M11**.
+**Alarm.** `interlixir-dead-letters` alarms when `e1 = FILL(m1, 0) + FILL(m2, 0) + FILL(m3, 0) >= 1`, where `m1`–`m3` are `NumberOfMessagesReceived` (Sum, 1 minute) on the three DLQs, and missing data is not breaching. It uses `NumberOfMessagesReceived` rather than queue depth because the handler drains a dead letter within seconds, so a depth sample taken once a minute would often read 0, while every dead letter is received at least once.

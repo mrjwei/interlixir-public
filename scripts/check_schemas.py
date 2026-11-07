@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check the built-in synthesis schemas before they are seeded (re-seeding in M14).
+"""Check the built-in synthesis schemas before they are seeded.
 
 Each file in schemas/builtin/ must:
   - be a valid JSON Schema (draft 2020-12, the draft named in its $schema)

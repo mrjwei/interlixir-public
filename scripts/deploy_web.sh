@@ -8,7 +8,7 @@ set -euo pipefail
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
 bucket="${WEB_BUCKET:-interlixir-web}"
-distribution="${CLOUDFRONT_DISTRIBUTION_ID:?set CLOUDFRONT_DISTRIBUTION_ID (the deployment notes)}"
+distribution="${CLOUDFRONT_DISTRIBUTION_ID:?set CLOUDFRONT_DISTRIBUTION_ID}"
 
 cd "$root/web"
 npm ci

@@ -11,7 +11,7 @@ Id = Annotated[str, Path(pattern=keys.ID_PATTERN)]
 
 
 def _no_cache(cache_control: Annotated[str, Header()] = "") -> bool:
-    """The client's `Cache-Control: no-cache`: skip the cached copy (M12; the load test's baseline run)."""
+    """The client's `Cache-Control: no-cache`: skip the cached copy."""
     return "no-cache" in cache_control.lower()
 
 

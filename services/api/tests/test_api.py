@@ -131,7 +131,7 @@ class Health(ApiTestCase):
 
 
 class Logs(ApiTestCase):
-    """M16: one line per request with the route, status, durationMs, the verified userId and the path's IDs."""
+    """one line per request with the route, status, durationMs, the verified userId and the path's IDs."""
 
     def request_lines(self, records):
         return [r for r in records if r["msg"] == "request"]
@@ -377,7 +377,7 @@ class Documents(ApiTestCase):
 
 
 class Changes(ApiTestCase):
-    """M20: rename and delete a project, rename or edit a document, delete a document with its recording."""
+    """rename and delete a project, rename or edit a document, delete a document with its recording."""
 
     def setUp(self):
         super().setUp()

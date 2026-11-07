@@ -122,7 +122,7 @@ def aside(response, route, key, ttl, load, bypass=False):
 
     load() returns the JSON-ready response body and raises (e.g. NotFound) for anything that mustn't be
     cached. bypass skips the read but still refreshes the entry: it's how the client's
-    `Cache-Control: no-cache` is honoured, which the M12 load test uses for its "without cache" run.
+    `Cache-Control: no-cache` is honoured; load tests use it for a no-cache baseline.
     Sets the X-App-Cache header (HIT, MISS, BYPASS, or OFF when there is no usable cache) and logs one EMF
     line, from which CloudWatch extracts CacheHit / CacheMiss per route and in total.
     """
@@ -174,7 +174,7 @@ def invalidate(*keys):
         _failed("delete", error)
 
 
-# --- Quota counters (M18 chat) -------------------------------------------------------------------------
+# --- Quota counters (chat agent) -------------------------------------------------------------------------
 
 
 def window(now=None):

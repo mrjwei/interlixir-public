@@ -54,20 +54,18 @@ _QUEUES = "https://sqs.ap-southeast-2.amazonaws.com/123456789012/"
 SYNTHESIS_QUEUE_URL = os.environ.get("SYNTHESIS_QUEUE_URL", _QUEUES + "interlixir-synthesis")
 BUS_NAME = os.environ.get("BUS_NAME", "interlixir-bus")
 # G5: Nemotron for anything structured (native tool use); Gemma for the title. Redaction stays on Nemotron
-# until M14 shows whether Gemma's recall is close enough.
+# until an evaluation shows whether Gemma's recall is close enough.
 SYNTHESIS_MODEL_ID = os.environ.get("SYNTHESIS_MODEL_ID", bedrock.NEMOTRON)
 REDACTION_MODEL_ID = os.environ.get("REDACTION_MODEL_ID", bedrock.NEMOTRON)
 TITLE_MODEL_ID = os.environ.get("TITLE_MODEL_ID", bedrock.GEMMA)
 SYNTHESIS_MAX_TOKENS = int(os.environ.get("SYNTHESIS_MAX_TOKENS", "8192"))
 # About 10K tokens of context files, on top of a transcript of up to ~45K tokens at the 3 h limit.
 CONTEXT_CHAR_BUDGET = int(os.environ.get("CONTEXT_CHAR_BUDGET", "40000"))
-# 2000, not 8000: smaller windows lost fewer names in the M14 evaluation (recall 0.96 -> 0.98,
-# the build logs).
+# 2000, not 8000: smaller windows lost fewer names in evaluation (recall 0.96 -> 0.98).
 REDACTION_WINDOW_CHARS = int(os.environ.get("REDACTION_WINDOW_CHARS", "2000"))
 REDACTION_PARALLELISM = int(os.environ.get("REDACTION_PARALLELISM", "3"))
-# A failed message is visible again after this many seconds x its receive count. 60, not 30: in M17's steady run
-# Nemotron gave invalid redaction replies for about 2.5 min, and at 30 s all 3 receives fell inside that spell
-# (the build logs).
+# A failed message is visible again after this many seconds x its receive count. 60, not 30: in a steady
+# run Nemotron gave invalid redaction replies for about 2.5 min, and at 30 s all 3 receives fell inside that spell.
 RETRY_BACKOFF_SECONDS = 60
 
 ID = re.compile(r"[A-Za-z0-9_-]{1,128}")

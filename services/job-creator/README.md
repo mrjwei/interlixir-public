@@ -14,7 +14,7 @@ Chunker. Lambda **container image** (Python 3.14, arm64) with static ffmpeg/ffpr
 Both arrive on the **upload queue** `interlixir-upload` through one event source mapping (batch size 1, `ReportBatchItemFailures`):
 
 - **S3 notification** (`ObjectCreated:Post` on `recordings/`). Ignores `s3:TestEvent`, non-create events, other buckets, keys ending in `/` and size-0 objects; URL-decodes the key (`unquote_plus`); the key must match `recordings/<userId>/<projectId>/<recordingId>.<mp3|m4a|wav|webm|mp4>`, have a Recording item whose `storageKey` is exactly that key, and a Job owned by that `userId`. Anything else is logged and dropped.
-- **`RetryRequested`** from the bus: rule `RetryRequested` → **the same queue** (target role `eventbridge-rules-role`, the account's permission limits). The SQS body is the EventBridge event. A direct EventBridge → Lambda target also works (`handler` checks `detail-type` first), but needs a Lambda resource policy and gives retries no DLQ, so the queue is the default.
+- **`RetryRequested`** from the bus: rule `RetryRequested` → **the same queue** (target role `eventbridge-rules-role`). The SQS body is the EventBridge event. A direct EventBridge → Lambda target also works (`handler` checks `detail-type` first), but needs a Lambda resource policy and gives retries no DLQ, so the queue is the default.
 
 ## Upload path
 
@@ -46,17 +46,12 @@ Nothing in S3 expires, so the last row only happens if the project was deleted, 
 - **Anything else** (S3/SQS/EventBridge errors, ffmpeg timeout, `/tmp` full) raises: the message is retried, then the DLQ. When the message reaches the DLQ, the dead-letter handler (`services/dlq-handler/`) marks the job `Failed` ("couldn't be prepared for transcription after several attempts").
 - A last chunk under 1 s is dropped (AAC padding makes an exact 30:00 file decode a few samples long; it would be a 7th, empty chunk), unless it's the only chunk.
 
-## Console settings
+## Deployment
 
 | Setting | Value |
 | --- | --- |
-| ECR repo | `interlixir-job-creator`, both tags (check `purpose` stuck, as for the API repo). Push with `make push-job-creator` |
-| Function | `interlixir-job-creator`, **Container image** (the pushed URI), **arm64**, role `lambda-role`, no VPC, both tags |
-| Memory / ephemeral storage / timeout | **2048 MB / 1024 MB / 600 s** to start. 600 s matches the upload queue's 3600 s visibility (6 × the timeout). `/tmp` needs input (≤ 200 MB) + chunks (≈ 115 MB per hour of audio). Kept after the M6 run: 30 min took 16.4 s and 253 MB |
-| Environment | none (code defaults: table, buckets, queue URLs, bus, `CHUNK_SECONDS = 300`, `MAX_AUDIO_SECONDS = 10800`) |
-| Trigger | SQS `interlixir-upload`, batch size 1, batching window 0, **Report batch item failures** on, both tags |
-| EventBridge rule | `interlixir-retry-requested` on `interlixir-bus`, pattern `{"source": ["interlixir.app"], "detail-type": ["RetryRequested"]}` → SQS `interlixir-upload`, execution role `eventbridge-rules-role`, both tags |
-
-The upload queue already holds the M5 check's notification(s): once the trigger is on, the 1 s WAV becomes one chunk and its job "Transcribing 0/1".
-
-Milestone: **M6**.
+| Image | ECR repo `interlixir-job-creator`; `make push-job-creator` builds the arm64 image (with ffmpeg) and pushes it tagged by git SHA |
+| Function | `interlixir-job-creator`, container image, arm64, no VPC, no environment (code defaults: table, buckets, queue URLs, bus, `CHUNK_SECONDS = 300`, `MAX_AUDIO_SECONDS = 10800`) |
+| Memory / ephemeral storage / timeout | 2048 MB / 1024 MB / 600 s. `/tmp` needs the input (≤ 200 MB) plus chunks (≈ 115 MB per hour of audio); a 30-minute file took about 16 s and 253 MB. The upload queue's visibility timeout is 3600 s (6 × the function timeout) |
+| Trigger | SQS `interlixir-upload`, batch size 1, report batch item failures on |
+| Rule | `interlixir-retry-requested` on `interlixir-bus`, pattern `{"source": ["interlixir.app"], "detail-type": ["RetryRequested"]}`, target SQS `interlixir-upload` |

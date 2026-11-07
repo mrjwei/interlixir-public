@@ -1,6 +1,6 @@
 # services/mcp-server
 
-The MCP tool server, **internal only**: a sidecar container (`mcp`) in the chat-agent task, listening on `127.0.0.1:8081`, with no port mapping and no ALB route (G10; Service Connect isn't on the unit's list). Python, the official MCP SDK 2.x (`MCPServer`), Streamable HTTP in **stateless JSON** mode: every `POST /mcp` is complete on its own. Milestone **M18**.
+The MCP tool server, **internal only**: a sidecar container (`mcp`) in the chat-agent task, listening on `127.0.0.1:8081`, with no port mapping and no ALB route. Python, the official MCP SDK 2.x (`MCPServer`), Streamable HTTP in **stateless JSON** mode: every `POST /mcp` is complete on its own.
 
 **`userId` comes only from the verified token, never from tool arguments.** The agent forwards the user's Cognito ID token as `Authorization: Bearer …` on every MCP request; every tool call verifies it (`auth.py`, the same checks as the API) and builds every key from its `sub`. No tool has a user argument (a test checks the published schemas). The server is read-only: it has no write path at all.
 
@@ -12,12 +12,12 @@ All read-only (`readOnlyHint`). A project or document that is missing or someone
 | --- | --- | --- |
 | `list_projects` | none | `projectId`, `name`, `createdAt`, `lastDocumentAt` per project |
 | `list_documents` | `projectId` | `projectName`; `documents` (`documentId`, `title`, `schemaId`, `createdAt`); `notReady`: recordings without a document, with their job's `stage` (and `failureReason`) |
-| `list_documents` (no `projectId`) | none | every project's `documents` in one call, newest first, each with `projectId` and `projectName` (at most 100, then `truncated`), `count`, and `notReady` with `projectName`. Discovery in one round instead of one per project (issue #30) |
+| `list_documents` (no `projectId`) | none | every project's `documents` in one call, newest first, each with `projectId` and `projectName` (at most 100, then `truncated`), `count`, and `notReady` with `projectName`. Discovery in one round instead of one per project |
 | `read_document` | `projectId`, `documentId` | `title`, `schemaId`, `createdAt`, `markdown` (cut at 32,000 characters, with `truncated` saying so) |
 | `get_history` | `limit` (1–50, default 10) | The caller's events newest first: `eventType`, `occurredAt`, `projectId`, `fileName`, `jobId` or `chatSessionId`, `stage`, `tokenCount`, `cost` |
 | `get_job_stats` | none | Per project: `jobsByStage`, `audioMinutes`, `tokenCount`, `cost` (up to 100 jobs per project, through GSI1) |
 
-Documents are nested under their project (`PROJECT#…` / `DOC#…`, as in the API), so `read_document` takes the project too; `list_documents` gives both IDs. The arguments have the same names as the fields in the list results, because the model copies the keys as well as the values: with `project_id` / `document_id` it sent `projectId` / `documentId` and every read failed validation (issue #33). Ownership is checked as in `services/api/app/store.py`: projects by key, documents and jobs by their `userId` attribute, a project's contents after the project lookup, and the document's S3 key built from the caller's `userId`.
+Documents are nested under their project (`PROJECT#…` / `DOC#…`, as in the API), so `read_document` takes the project too; `list_documents` gives both IDs. The arguments have the same names as the fields in the list results, because the model copies the keys as well as the values: with `project_id` / `document_id` it sent `projectId` / `documentId` and every read failed validation. Ownership is checked as in `services/api/app/store.py`: projects by key, documents and jobs by their `userId` attribute, a project's contents after the project lookup, and the document's S3 key built from the caller's `userId`.
 
 Every call logs one JSON line, `tool call`, with `Tool`, `userId`, `outcome` (`ok`, `not found`, `unauthorized`, `error`) and `durationMs`, which is also the `ToolLatency` metric by `Tool`. Arguments and results aren't logged: they are the user's research content.
 

@@ -200,7 +200,7 @@ class ProjectLists(CacheTestCase):
         self.assertEqual(self.mc.ttl_of(cache.project_key(ALICE, self.project_id)), cache.LIST_TTL)
 
     def test_rename_and_delete_invalidate_both_lists(self):
-        # M20: the project list shows the name, the project's own read shows it too.
+        # the project list shows the name, the project's own read shows it too.
         path = f"/a3/projects/{self.project_id}"
         for _ in range(2):
             self.poll("/a3/projects")

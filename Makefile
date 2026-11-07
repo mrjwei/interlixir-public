@@ -32,7 +32,7 @@ venv-api: ## Create services/api/.venv (Python 3.14 via uv) with the API's test 
 	VIRTUAL_ENV=$(API_VENV) uv pip install -r services/api/requirements-dev.txt
 
 .PHONY: test-api
-test-api: ## API service tests against moto: routes, user scoping, retry, cursors, upload policies, cache (M12; MEMCACHED_TEST_ENDPOINT=host:port adds a real server)
+test-api: ## API service tests against moto: routes, user scoping, retry, cursors, upload policies, cache (MEMCACHED_TEST_ENDPOINT=host:port adds a real server)
 	PYTHONPATH=services/shared $(API_VENV)/bin/python -m unittest discover -s services/api/tests -t services/api -v -b
 
 .PHONY: push-api

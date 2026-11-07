@@ -67,7 +67,7 @@ def job_pk(job_id):
 
 def recording_object_key(user_id, project_id, recording_id, ext):
     """uploads bucket key. The job creator parses projectId and recordingId back out of it, so its shape
-    is part of the contract with M6."""
+    is part of the contract with the job creator."""
     return f"recordings/{user_id}/{project_id}/{recording_id}.{ext}"
 
 

@@ -86,7 +86,7 @@ def synthesise(client, model_id, schema, template_name, user_prompt, usage, cloc
 
 def repair(schema, value):
     """The document with the slips code can fix safely, so the regeneration (another full call, and a failed job
-    if it slips again) is kept for what it can't (M14: these were most of the rejected first attempts):
+    if it slips again) is kept for what it can't (these were most of the rejected first attempts):
     - a list longer than its maxItems is cut to the first items (the descriptions ask for the most important
       first). The model wrote 4 quotes where 3 were allowed even with "At most 3." in the description
     - a list or object sent as a JSON string is parsed, if it parses to the right type

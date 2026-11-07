@@ -17,7 +17,7 @@ Failures:
   refused with DEPLOYMENT_BLOCKED: the message is handed back untouched and the worker exits, rather than
   starting a chunk the coming SIGTERM would abandon.
 - a stop is not an attempt: a message handed back on stop goes back as a new message (receive count 0), so only
-  real failures count toward the DLQ (M17 burst run 1, hand_back()).
+  real failures count toward the DLQ (see hand_back()).
 - the claim stores the winning message's ID, so if the winner dies after claiming, its own redelivery (same
   MessageId) can still send the request; any other message for the job can't. A copy handed back on stop carries
   that ID in its claimId attribute. Synthesis may therefore see a request twice and must be idempotent
@@ -211,7 +211,7 @@ def claim_id(message):
 def hand_back(message):
     """Returns a message this task won't work on because it's stopping, and the new message's ID (None if it was
     released instead). A stop isn't the chunk's fault, but every receive counts toward the queue's 3 before the
-    DLQ, and a step-down stops several tasks at once: in M17's burst run 1 one message was refused by three
+    DLQ, and a step-down stops several tasks at once: in a load test one message was refused by three
     stopping tasks in a row and its job failed without a single attempt. So the body goes back as a new message
     (receive count 0), carrying the claim ID, and the received one is deleted. If the send fails, the message is
     released as before. If the delete fails, the chunk is queued twice, which the transcript check and the
@@ -423,7 +423,7 @@ class Heartbeat:
             release(self.handle, VISIBILITY_SECONDS)
 
 
-# --- M16: task time meter ----------------------------------------------------------------------------
+# --- task time meter ----------------------------------------------------------------------------
 
 
 class Meter:

@@ -23,21 +23,21 @@ Keep it thin: logging (structured JSON, EMF helpers: the log contract), ID/key b
 | detail-type | Producer | Consumer | Detail beyond the common fields |
 | --- | --- | --- | --- |
 | `UploadReceived` | job creator | history writer | `jobId` |
-| `TranscriptionDone` | Whisper worker, G8 winner | history writer | `jobId` |
+| `TranscriptionDone` | Whisper worker (the chunk that completes the set) | history writer | `jobId` |
 | `SynthesisDone` | synthesis | history writer | `jobId`, `tokenCount`, `cost` |
-| `JobFailed` | M11 failure path | history writer | `jobId`, `stage` (where it failed), optional `tokenCount`, `cost` |
+| `JobFailed` | job creator, synthesis, dead-letter handler | history writer | `jobId`, `stage` (where it failed), optional `tokenCount`, `cost` |
 | `ChatSession` | chat agent | history writer | `chatSessionId`, `tokenCount`, `cost` |
 | `StageChanged` | pipeline services | none yet | `jobId`, `stage` |
 | `DeleteRequested` | stream router | GC | `entity` (`Project` / `Document`), `projectId`, `documentId` (exactly when `Document`); `jobId`, `recordingId` (optional, only when `Document`) |
 | `RetryRequested` | stream router | job creator | `jobId`, `projectId`, `recordingId`, `retryCount` |
 
 **History vs control.**
-- The first five are **history events**: the data-model constraints limits an Event item's `eventType` to these. The history writer's rule matches only them.
+- The first five are **history events**: the data model limits an Event item's `eventType` to these. The history writer's rule matches only them.
 - The last three are **control events**. They start work and aren't shown to the user.
 
 **Where the stream router gets the fields:**
 - **Project REMOVE:** `userId` from `PK` (`USER#…`), `projectId` from `SK`.
-- **Document REMOVE:** `projectId` from `PK`, `documentId` from `SK`, and **`userId` from the item's `userId` attribute**, which synthesis writes (from the Job's `userId`). The drawio's Document item shows it (2026-10-22). `jobId` and `recordingId` come from the item's attributes of those names (synthesis writes both; M20).
+- **Document REMOVE:** `projectId` from `PK`, `documentId` from `SK`, and **`userId` from the item's `userId` attribute**, which synthesis writes (from the Job's `userId`). `jobId` and `recordingId` come from the item's attributes of those names (synthesis writes both; .
 - **Job MODIFY:** `jobId` from `PK`; `userId`, `recordingId` and `retryCount` from the new image; `projectId` from `GSI1PK` (`PROJECT#…`).
 
 **Producers:**
@@ -61,10 +61,10 @@ Keep it thin: logging (structured JSON, EMF helpers: the log contract), ID/key b
 | Message | Queue | Producer | Consumer | Body |
 | --- | --- | --- | --- | --- |
 | `TranscriptionChunk` | `interlixir-transcription` | job creator | Whisper worker | `jobId`, `userId`, `chunk` (0-based), `chunksTotal`, `startSeconds` |
-| `SynthesisRequest` | `interlixir-synthesis` | G8 winner; job creator on a retry that finds every transcript | synthesis | `jobId`, `userId` |
+| `SynthesisRequest` | `interlixir-synthesis` | the Whisper worker that completes the set; job creator on a retry that finds every transcript | synthesis | `jobId`, `userId` |
 
-- Object keys aren't in the bodies: they follow from the IDs (layout in the deployment notes). Audio `chunks/<jobId>/<chunk>.wav`; transcript `transcripts/<userId>/<jobId>/chunks/<chunk>.json`.
-- `chunksTotal` travels with each chunk, so the G8 "last chunk" check can compare against the message rather than depend on the job item's write order.
+- Object keys aren't in the bodies: they follow from the IDs Audio `chunks/<jobId>/<chunk>.wav`; transcript `transcripts/<userId>/<jobId>/chunks/<chunk>.json`.
+- `chunksTotal` travels with each chunk, so the "last chunk" check can compare against the message rather than depend on the job item's write order.
 - **Delivery is at least once, and the job creator may send a chunk twice** (a redone run after a failure). Consumers must be idempotent: deterministic output keys, a set for `doneChunks`, and the conditional `synthesisEnqueued` before sending `SynthesisRequest`. Synthesis can also see a request twice (SQS itself, or concurrent retries), so its outputs need deterministic keys too.
 - **`synthesisEnqueued` records who claimed the request:** the winning `TranscriptionChunk`'s SQS `MessageId` (Whisper worker), or `true` (the job creator's retry path). The worker's condition is `attribute_not_exists(synthesisEnqueued) OR synthesisEnqueued = <its own MessageId>`, so if the winner dies between the claim and the send, its own redelivery (same `MessageId`) can still send; no other message can.
 
@@ -90,7 +90,7 @@ Keep it thin: logging (structured JSON, EMF helpers: the log contract), ID/key b
 | `contracts/logs.py` | `configure(service)`, `bind()` / `scope()`, `info` / `warning` / `error`, `metric()` (an EMF line), `capture()` for tests |
 | `tests/test_logs.py` | Line shape, binding, the EMF directive; run by `make test-contracts` |
 
-Every service writes through it, so the saved trace query and the dashboard (`docs/observability/`) can rely on the names. It's packaged like `events.py`: `scripts/build_lambda_zip.sh` copies it into each zip, and the job creator, worker and API images `COPY --from=shared` it.
+Every service writes through it, so queries, dashboards and alarms can rely on the names. It's packaged like `events.py`: `scripts/build_lambda_zip.sh` copies it into each zip, and the job creator, worker and API images `COPY --from=shared` it.
 
 - **One compact JSON object per line on stdout**, printed rather than passed to `logging`: the Lambda runtime prefixes `logging` output, and a prefixed line isn't EMF.
 - **Fields on every line:** `service`, `level` (`INFO`, `WARNING`, `ERROR`), `msg`.
@@ -111,4 +111,4 @@ Every service writes through it, so the saved trace query and the dashboard (`do
 | `ToolLatency` | Milliseconds | `Tool` | MCP server, per tool call |
 | `CacheHit`, `CacheMiss` | Count | `Route` | API |
 
-**Changing it:** a renamed field or metric breaks the queries, the dashboard and the alarms in `docs/observability/`, so change them together and run `make check-observability` after the deploy.
+**Changing it:** a renamed field or metric breaks any query, dashboard or alarm built on it, so change them together.

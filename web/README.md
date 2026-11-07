@@ -17,11 +17,11 @@ make deploy-web       # needs CLOUDFRONT_DISTRIBUTION_ID; see Hosting below
 ## Behaviour
 
 - **Auth:** log in and sign up through the auth service's `POST /v1/auth/login` / `register`. Both return a Cognito ID token, and the auth service's register confirms the user itself, so there's no code step. The token is held in memory (`src/lib/api.ts`) and mirrored to `sessionStorage` (`src/lib/auth.tsx`), so a refresh keeps the user signed in until the token's `exp` passes, they log out, or the tab closes. Every `/app` call sends `Authorization: Bearer`. A 401 ends the session and returns to `/login` with a "session ended" note. `RequireAuth` guards every app route.
-- **Sign-up checks** mirror the user pool's policy (read on 2026-10-15): 8+ characters with an upper, a lower, a number and a symbol. the auth service passes Cognito's error text through, and the page shows it under the field.
+- **Sign-up checks** mirror the user pool's policy: 8+ characters with an upper, a lower, a number and a symbol. the auth service passes Cognito's error text through, and the page shows it under the field.
 - **Shell:** sidebar with projects, each project's recordings with live status ("Transcribing 2/3"), and history (newest first, "Show more" pages through `nextCursor`). Light and dark themes. Below 768 px the sidebar becomes a sheet.
 - **Upload:** schema select (built-ins, then the user's own marked Custom), up to 5 recordings, an instruction (≤ 4000), and up to 5 context files (≤ 20 MB total). Limits are checked client-side to mirror `services/api/app/routes/uploads.py`; the server and S3 enforce them anyway. One `POST /a3/projects/{id}/uploads` returns a POST policy per file, then each file goes straight to S3 with XHR for per-file progress (context files first). A failed file can be retried with its own policy while it's valid (15 min). The page asks before you leave mid-upload.
 - **Status polling:** each job is polled every 3 s (TanStack Query `refetchInterval`) until it's Done or Failed, and only while the tab is visible. A stage change refreshes the project (a Done job brings its document title) and history.
-- **Job / document page** (`/projects/:projectId/jobs/:jobId`): a stage stepper (Queued → Transcribing n/m → Redacting → Synthesising → Done) while the job runs, with Retry on Failed (M11's route). Once Done, the document: the Markdown (react-markdown, no raw HTML), the recording, duration, tokens and cost, and an Inputs panel with the instruction and the context file names. Export Markdown uses the pre-signed download route.
+- **Job / document page** (`/projects/:projectId/jobs/:jobId`): a stage stepper (Queued → Transcribing n/m → Redacting → Synthesising → Done) while the job runs, with Retry on Failed (`POST /a3/jobs/{jobId}/retry`). Once Done, the document: the Markdown (react-markdown, no raw HTML), the recording, duration, tokens and cost, and an Inputs panel with the instruction and the context file names. Export Markdown uses the pre-signed download route.
 - **Sidebar document menu**: each recording with a document has a "Document actions" button (shown on hover or focus, always on touch screens) whose menu holds Rename, Export Markdown (the same download as the document view's button, `lib/export.ts`) and Delete (design frame 07e).
 - **Rename, edit and delete** (`lib/changes.ts`, `components/app/change-dialogs.tsx`): the document view has Edit (Write / Preview tabs over the Markdown, a save bar with "Unsaved changes", and the browser's leave-page prompt while dirty; frame 07c), Export Markdown and Delete (confirmation, frame 07d); the rename dialog is frame 07f. The project page's "…" menu renames or deletes the project (not in the design; it reuses the same dialogs). Each change updates the cached queries in place and refetches; deleting a document drops its recording from the sidebar at once and leaves its page, deleting a project returns home. The files go a few seconds later (GC, `services/gc/`).
 
@@ -40,9 +40,7 @@ make deploy-web       # needs CLOUDFRONT_DISTRIBUTION_ID; see Hosting below
 | `src/pages/` | Login and sign-up, home, project, upload, job/document, not found |
 | `cloudfront/spa-rewrite.js` | CloudFront Function for deep links (Hosting, step 3) |
 
-## Hosting (console)
-
-Record each resource in the deployment notes as you go.
+## Hosting
 
 1. **Distribution** (CloudFront → Create distribution), name `interlixir-web`:
    - Origin 1: the S3 bucket `interlixir-web` (pick it from the list; not the website endpoint). Origin access: **Origin access control settings**. Create an OAC (sign requests), then use the console's **Copy policy** and add that statement to the bucket policy next to `DenyInsecureTransport`.
@@ -50,23 +48,12 @@ Record each resource in the deployment notes as you go.
 2. **API origin and behaviours:**
    - Origin 2: `abcde12345.execute-api.ap-southeast-2.amazonaws.com`, protocol HTTPS only, origin path **`/interlixir_stage`**.
    - Behaviour `/a3/*` → origin 2: **all methods** (GET, HEAD, OPTIONS, PUT, POST, PATCH, DELETE), HTTPS only, cache policy **CachingDisabled**, origin request policy **AllViewerExceptHostHeader** (forwards `Authorization` and query strings, but not `Host`, which API Gateway would reject).
-   - Behaviour `/v1/auth/*` → origin 2, same settings. **New compared with G9:** sign-in is on the auth service's API too, and this keeps it same-origin.
-3. **Deep links (correction to G9).** G9 planned custom error responses 403/404 → `/index.html`. Those apply to **every behaviour**, so a real API 404 (another user's ID) would reach the SPA as 200 + HTML. Instead:
+   - Behaviour `/v1/auth/*` → origin 2, same settings. Sign-in is on the auth service's API too, and this keeps it same-origin.
+3. **Deep links.** Custom error responses (403/404 → `/index.html`) would apply to **every behaviour**, so a real API 404 (another user's ID) would reach the SPA as 200 + HTML. Instead:
    - **Preferred:** CloudFront → Functions → Create `interlixir-spa-rewrite` (runtime cloudfront-js-2.0) with `cloudfront/spa-rewrite.js`, publish it, and associate it with the **default behaviour only**, as a viewer request. No custom error responses.
-   - **If creating a function is denied** (record it in your notes): build with `VITE_ROUTER=hash` (URLs become `/#/projects/...`). CloudFront then only ever serves `/` and real files, and still needs no error responses.
-4. **Uploads bucket CORS** (S3 → `interlixir-uploads` → Permissions → CORS), the rule already noted in your notes: method `POST`, origins `https://<distribution domain>` and `http://localhost:5173`, allowed headers `*`, expose `ETag`, max age 3000. The upload progress listener makes the browser send a preflight, hence the allowed headers.
+   - **If creating a function isn't possible**: build with `VITE_ROUTER=hash` (URLs become `/#/projects/...`). CloudFront then only ever serves `/` and real files, and still needs no error responses.
+4. **Uploads bucket CORS** (S3 → `interlixir-uploads` → Permissions → CORS): method `POST`, origins `https://<distribution domain>` and `http://localhost:5173`, allowed headers `*`, expose `ETag`, max age 3000. The upload progress listener makes the browser send a preflight, hence the allowed headers.
 5. **Deploy:** `CLOUDFRONT_DISTRIBUTION_ID=E… make deploy-web`. Hashed `assets/` are cached for a year and never deleted; `index.html` is `no-cache` and invalidated on each deploy.
-
-**Checks**
-
-```bash
-curl -sI https://<domain>/ | head -1                                  # 200, served by CloudFront
-curl -sI https://<domain>/projects/x/jobs/y | head -1                 # 200 (index.html via the function)
-curl -s -o /dev/null -w '%{http_code}\n' https://<domain>/a3/projects  # 401: API Gateway, not index.html
-curl -s -o /dev/null -w '%{http_code}\n' https://interlixir-web.s3.ap-southeast-2.amazonaws.com/index.html  # 403: bucket only via OAC
-```
-
-Then the week-1 exit test on the CloudFront URL.
 
 ## Design changes
 

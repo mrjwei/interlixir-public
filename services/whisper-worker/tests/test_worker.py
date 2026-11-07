@@ -376,7 +376,7 @@ class WorkerTest(Base):
         self.assertEqual(self.protection.calls, [])
 
     def test_task_picked_for_stopping_releases_without_starting(self):
-        # M10 run 1: a scale-in picked the task between chunks; it started the next one anyway and SIGTERM
+        # a scale-in picked the task between chunks; it started the next one anyway and SIGTERM
         # abandoned it, costing that message a receive and the work done so far.
         self.make_job(total=1)
         self.enqueue(chunk_message())
@@ -389,7 +389,7 @@ class WorkerTest(Base):
         self.assertTrue(worker.stopping.is_set())  # main() exits; ECS's SIGTERM finds nothing to abandon
 
     def test_a_stop_is_not_an_attempt(self):
-        # M17 burst run 1: one message was refused by three stopping tasks in a row, reached the DLQ on its 3
+        # one message was refused by three stopping tasks in a row, reached the DLQ on its 3
         # receives and failed its job without a single attempt.
         self.make_job(total=1)
         first_id = self.enqueue(chunk_message())
@@ -455,7 +455,7 @@ class WorkerTest(Base):
 
 
 class LogTest(Base):
-    """M16: the fields the trace query reads, and the metrics the dashboard reads."""
+    """the fields the trace query reads, and the metrics the dashboard reads."""
 
     def test_a_chunks_lines_name_the_job_and_the_transcription_is_timed(self):
         self.make_job(total=1)
@@ -517,7 +517,7 @@ class ProtectionTest(unittest.TestCase):
 
     def test_deployment_blocked_says_the_task_is_being_stopped(self):
         protection = worker.Protection(agent_uri="http://169.254.170.2/api/abc")
-        blocked = {"failure": {"Arn": "arn:x", "Detail": None, "Reason": "DEPLOYMENT_BLOCKED"}}  # as logged in M10
+        blocked = {"failure": {"Arn": "arn:x", "Detail": None, "Reason": "DEPLOYMENT_BLOCKED"}}  # as logged
         with mock.patch("urllib.request.urlopen", return_value=self.response(blocked)):
             self.assertFalse(protection.set(True))
             self.assertTrue(protection.set(False))  # turning it off is never a reason to stop

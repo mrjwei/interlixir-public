@@ -17,7 +17,7 @@ One container service (`interlixir-api`, FastAPI on port 8080) on ECS Fargate in
 | `app/auth.py` | `UserId`, the only source of the caller's ID: the `sub` of a verified Cognito ID token (JWKS cached 6 h, RS256 only, issuer, `aud`, `token_use = id`, `exp`). 401 on any failure, 503 if the JWKS can't be fetched |
 | `app/keys.py` | Single-table key builders, `ID_PATTERN`, `new_id()` (UUIDv7) |
 | `app/store.py` | Every DynamoDB/S3 call. Ownership checks live here, and each write's cache invalidation |
-| `app/cache.py` | Memcached: `aside()` (cache-aside on a route's response, sets `X-App-Cache`, logs the EMF line), `invalidate()`, the key builders and TTLs, and `count_in_window()` (hourly quota counters for M18). Fails open, with a 10 s backoff after an error |
+| `app/cache.py` | Memcached: `aside()` (cache-aside on a route's response, sets `X-App-Cache`, logs the EMF line), `invalidate()`, the key builders and TTLs, and `count_in_window()` (hourly quota counters for the chat agent). Fails open, with a 10 s backoff after an error |
 | `app/routes/` | One router per resource; they shape responses and nothing else. `uploads.py` also holds the upload limits and the extension → Content-Type table |
 | `tests/test_api.py` | Route tests against moto: `make venv-api` once, then `make test-api` |
 | `tests/test_uploads.py` | Presign route: items pre-created in one transaction, each policy's conditions decoded and checked, every rejection writes nothing |
@@ -29,23 +29,23 @@ One container service (`interlixir-api`, FastAPI on port 8080) on ECS Fargate in
 
 All `/app` routes need a token. IDs must match `^[A-Za-z0-9_-]{1,128}$` (422 otherwise), so no ID can carry a key delimiter (`#`, `/`).
 
-| Method and path | Does | Milestone |
-| --- | --- | --- |
-| `GET /healthz` | `{"status":"ok"}`. Liveness only, no dependency calls | M4 |
-| `GET /a3/projects` | The caller's projects (sidebar). Cached 10 s | M4, M12 |
-| `POST /a3/projects` | Create, body `{"name"}` (1–100 chars, trimmed) → 201. Invalidates the list | M4, M12 |
-| `GET /a3/projects/{projectId}` | The project plus its recordings (with `jobId`) and documents. Cached 10 s | M4, M12 |
-| `PATCH /a3/projects/{projectId}` | Rename, body `{"name"}` (as for create) → the project. 404 if it isn't the caller's (the update can't create one). Invalidates the list and the project | M20 |
-| `DELETE /a3/projects/{projectId}` | Delete the Project item → 204 (404 if it isn't the caller's). GC removes its recordings, jobs, documents and files. Invalidates the list and the project | M20 |
-| `POST /a3/projects/{projectId}/uploads` | Presign (below) → 201 with a POST policy per file. 404 if it isn't the caller's project; 422 for anything outside the limits or an unknown schema. Invalidates the project's contents | M5, M12 |
-| `GET /a3/projects/{projectId}/documents/{documentId}` | Title, `jobId`, the Markdown from the docs bucket, and `contextFiles` (`contextFileId`, `fileName`) the job used, from its UsesAsContext links | M4, M9 |
-| `PATCH /a3/projects/{projectId}/documents/{documentId}` | Body `{"title"?, "markdown"?}`, at least one (title 1–200 chars, trimmed; Markdown up to 500,000 chars) → `{documentId, projectId, title, updatedAt}`. Markdown overwrites the object (versioning is off). A title on its own also rewrites the Markdown's first line if it is still the generated `# <old title>` (best effort: a failed write is logged, the rename stands). Invalidates the project (titles) | M20 |
-| `DELETE /a3/projects/{projectId}/documents/{documentId}` | The Document **and its Recording** in one transaction → 204, so the sidebar drops the entry at once. The stream router's `DeleteRequested` names the job and recording; GC removes the job, audio, chunks, transcripts, `.md` and any context file no other job uses. Invalidates the project and the job | M20 |
-| `GET /a3/projects/{projectId}/documents/{documentId}/export` | `{url, fileName, expiresIn}`: a 300 s pre-signed GET with `Content-Disposition: attachment` | M15 |
-| `GET /a3/jobs/{jobId}` | Stage, `chunksDone`/`chunksTotal`, `retryCount`, `failureReason`; plus `schemaId`, `instructionText`, `createdAt`, `audioSeconds`, and once Done `documentId`, `tokenCount`, `cost` (the SPA's progress and document views). Cached 5 s | M4, M12 |
-| `POST /a3/jobs/{jobId}/retry` | Conditional `Failed → Queued`, `retryCount + 1` → 202. 409 from any other stage. Invalidates the job's status | M11, M12 |
-| `GET /a3/schemas` | Built-ins plus the caller's own: `schemaId`, `name`, `description`, `builtIn` (no definitions) | M4 |
-| `GET /a3/history?limit=5&cursor=…` | Events newest first. `limit` 1–50; `nextCursor` is the base64url `LastEvaluatedKey`, rejected (400) unless it's in the caller's partition. Each page cached 30 s, by limit and cursor. Events carry `eventType`, `occurredAt`, `jobId` or `chatSessionId`, and where the history writer stored them `tokenCount`, `cost`, `stage` (`JobFailed`), `projectId` and `fileName` (job events) | M13, M12 |
+| Method and path | Does |
+| --- | --- |
+| `GET /healthz` | `{"status":"ok"}`. Liveness only, no dependency calls |
+| `GET /a3/projects` | The caller's projects (sidebar). Cached 10 s |
+| `POST /a3/projects` | Create, body `{"name"}` (1–100 chars, trimmed) → 201. Invalidates the list |
+| `GET /a3/projects/{projectId}` | The project plus its recordings (with `jobId`) and documents. Cached 10 s |
+| `PATCH /a3/projects/{projectId}` | Rename, body `{"name"}` (as for create) → the project. 404 if it isn't the caller's (the update can't create one). Invalidates the list and the project |
+| `DELETE /a3/projects/{projectId}` | Delete the Project item → 204 (404 if it isn't the caller's). GC removes its recordings, jobs, documents and files. Invalidates the list and the project |
+| `POST /a3/projects/{projectId}/uploads` | Presign (below) → 201 with a POST policy per file. 404 if it isn't the caller's project; 422 for anything outside the limits or an unknown schema. Invalidates the project's contents |
+| `GET /a3/projects/{projectId}/documents/{documentId}` | Title, `jobId`, the Markdown from the docs bucket, and `contextFiles` (`contextFileId`, `fileName`) the job used, from its UsesAsContext links |
+| `PATCH /a3/projects/{projectId}/documents/{documentId}` | Body `{"title"?, "markdown"?}`, at least one (title 1–200 chars, trimmed; Markdown up to 500,000 chars) → `{documentId, projectId, title, updatedAt}`. Markdown overwrites the object (versioning is off). A title on its own also rewrites the Markdown's first line if it is still the generated `# <old title>` (best effort: a failed write is logged, the rename stands). Invalidates the project (titles) |
+| `DELETE /a3/projects/{projectId}/documents/{documentId}` | The Document **and its Recording** in one transaction → 204, so the sidebar drops the entry at once. The stream router's `DeleteRequested` names the job and recording; GC removes the job, audio, chunks, transcripts, `.md` and any context file no other job uses. Invalidates the project and the job |
+| `GET /a3/projects/{projectId}/documents/{documentId}/export` | `{url, fileName, expiresIn}`: a 300 s pre-signed GET with `Content-Disposition: attachment` |
+| `GET /a3/jobs/{jobId}` | Stage, `chunksDone`/`chunksTotal`, `retryCount`, `failureReason`; plus `schemaId`, `instructionText`, `createdAt`, `audioSeconds`, and once Done `documentId`, `tokenCount`, `cost` (the SPA's progress and document views). Cached 5 s |
+| `POST /a3/jobs/{jobId}/retry` | Conditional `Failed → Queued`, `retryCount + 1` → 202. 409 from any other stage. Invalidates the job's status |
+| `GET /a3/schemas` | Built-ins plus the caller's own: `schemaId`, `name`, `description`, `builtIn` (no definitions) |
+| `GET /a3/history?limit=5&cursor=…` | Events newest first. `limit` 1–50; `nextCursor` is the base64url `LastEvaluatedKey`, rejected (400) unless it's in the caller's partition. Each page cached 30 s, by limit and cursor. Events carry `eventType`, `occurredAt`, `jobId` or `chatSessionId`, and where the history writer stored them `tokenCount`, `cost`, `stage` (`JobFailed`), `projectId` and `fileName` (job events) |
 
 **Uploads.** Body: `schemaId` (default `default`; built-in or the caller's own), `instructionText` (≤ 4000 chars), `recordings` (1–5 of `{fileName, contentType, sizeBytes}`; mp3, m4a, wav, webm, mp4; ≤ 200 MiB each) and `contextFiles` (0–5; pdf, docx, md, txt; ≤ 20 MiB in total). The declared `contentType` may be empty or `application/octet-stream`; otherwise it must be a known type for the extension. One DynamoDB transaction checks the project still exists and writes, per recording, a Recording (`jobId`, `storageKey`, `languageCode = en`) and a `Queued` Job (`schemaId`, `instructionText`, `userId`, GSI1 keys, `retryCount = 0`); per context file a ContextFile; and a UsesAsContext link from every job to every context file. Each policy (15 min) fixes the exact key, the extension's canonical Content-Type (returned in `fields`, so the client must send it) and `content-length-range` 1..**declared size**, so S3 also enforces the context total. The client posts `fields`, then `file` last, to `url` (regional, virtual-hosted). Response: `{expiresIn, recordings: [{recordingId, jobId, fileName, upload: {url, fields}}], contextFiles: [{contextFileId, fileName, upload}]}`.
 
@@ -77,28 +77,11 @@ Config is environment variables with the real names as defaults: `TABLE_NAME` (`
 - One log line per cached read, in Embedded Metric Format: namespace `interlixir`, metrics `CacheHit` and `CacheMiss` (Count), dimension `Route` (`job`, `projects`, `project`, `history`) plus a no-dimension total. `cache` in the same line is `hit`/`miss`/`bypass`/`off` for Logs Insights; a `cache unavailable, skipping it` warning names the failed operation.
 - Values are compact JSON of the response body (Memcached's 1 MB item limit is far away). Keys over Memcached's 250 bytes become `<kind>:sha256:<hex>`.
 
-### Console setup
+### Deployment
 
-1. **ElastiCache → Memcached caches → Create Memcached cache.** Deployment option **Design your own cache**, creation method **Standard create** (not Serverless), location AWS Cloud.
-   - Name `interlixir-cache`. Engine version: the default 1.6.x. Port **11211**. Parameter group: the default `default.memcached1.6`.
-   - Node type **`cache.t4g.micro`**, number of nodes **1**.
-   - Subnet group: **Choose existing**, `private-subnets`. Availability Zone placement: no preference.
-   - Security: **encryption in transit on** (the form won't create the cache with it off, 2026-10-22; the practical had it off). TLS uses the same port 11211, so the unit's security group still fits; the client turns TLS on with `CACHE_TLS=true`. Security groups: **`CacheSG` only** (remove `default` if it's preselected).
-   - Maintenance window: no preference. Leave every other advanced setting at its default.
-   - Tags: `project = interlixir`.
-2. Wait for **Available** (about 5–10 min), then read it back:
-
-   ```bash
-   aws elasticache describe-cache-clusters --cache-cluster-id interlixir-cache --show-cache-node-info \
-     --query 'CacheClusters[0].{status:CacheClusterStatus,type:CacheNodeType,nodes:NumCacheNodes,engine:EngineVersion,subnets:CacheSubnetGroupName,sg:SecurityGroups,tls:TransitEncryptionEnabled,endpoint:ConfigurationEndpoint,az:PreferredAvailabilityZone,arn:ARN}'
-   aws elasticache list-tags-for-resource --resource-name <arn from above>
-   ```
-
-   Expect `available`, `cache.t4g.micro`, 1 node, `private-subnets`, only `CacheSG`, TLS true, both tags.
-3. `make push-api` (the image now has `pymemcache`). **Task definition → new revision** of `interlixir-api`: the new image, and environment variables `CACHE_ENDPOINT` = `<ConfigurationEndpoint.Address>:11211` and `CACHE_TLS` = `true`. Everything else unchanged (0.25 vCPU / 0.5 GB, `AppSG`, private subnets).
-4. **ECS → `interlixir-api` → Update service** to the new revision. Once the new task is healthy, `make check-cache`. If every read says `OFF`, the task's log has `cache unavailable` with the error: a timeout means the security group path (the task must be in `AppSG`, the node in `CacheSG`), a name error means a typo in `CACHE_ENDPOINT`, an `SSLCertVerificationError` means the endpoint isn't the name on the node's certificate (use the configuration endpoint's address as given), and a connection closed or reset at once means `CACHE_TLS` isn't `true`.
-5. **Hit-ratio widget** (for the evidence now, the M16 dashboard later): CloudWatch → Metrics → `interlixir` → *Metrics with no dimensions* → `CacheHit` and `CacheMiss`, statistic Sum, period 1 min; add the math expression `100 * m1 / (m1 + m2)` labelled "Cache hit %". The metrics appear after the first cached reads (EMF, the account's permission limits).
+- **ElastiCache Memcached**, "design your own cache", standard (not serverless): `interlixir-cache`, engine 1.6.x, port 11211, `cache.t4g.micro` × 1 node, the private subnet group, security group `CacheSG` only, **encryption in transit on** (TLS uses the same port; the client turns it on with `CACHE_TLS=true`).
+- **API task definition:** the pushed image (`make push-api`), plus `CACHE_ENDPOINT` = `<configuration endpoint>:11211` and `CACHE_TLS=true`. Everything else is unchanged (0.25 vCPU / 0.5 GB, `AppSG`, private subnets).
+- If every read says `OFF`, the task's log has `cache unavailable` with the cause: a timeout means the security-group path (task in `AppSG`, node in `CacheSG`); a name error means a typo in `CACHE_ENDPOINT`; `SSLCertVerificationError` means the endpoint isn't the name on the node's certificate (use the configuration endpoint as given); a connection reset at once means `CACHE_TLS` isn't `true`.
+- **Hit ratio:** the `CacheHit` and `CacheMiss` metrics (namespace `interlixir`) appear after the first cached reads; graph `100 * m1 / (m1 + m2)` for the hit percentage.
 
 Cost: the node bills by the hour whether used or not (the only always-on part besides the ALB and the API task). Put it in the Pricing Calculator, and delete it after marking: the API keeps working without it (`OFF`).
-
-Milestones: M4, M20.

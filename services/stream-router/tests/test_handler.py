@@ -138,7 +138,7 @@ class Filters(unittest.TestCase):
             job_modify("Queued", "Failed"),
             record("INSERT", {"PK": s(f"USER#{USER}"), "SK": s(f"PROJECT#{PROJECT}")}, new={}),
             record("MODIFY", {"PK": s(f"USER#{USER}"), "SK": s(f"PROJECT#{PROJECT}")}, old={}, new={}),
-            # M20 renames and Markdown edits: nothing to route
+            # renames and Markdown edits: nothing to route
             record("MODIFY", {"PK": s(f"PROJECT#{PROJECT}"), "SK": s(f"DOC#{DOC}")}, old={}, new={}),
             record("REMOVE", {"PK": s(f"PROJECT#{PROJECT}"), "SK": s(f"REC#{REC}")}, old={}),
             record("REMOVE", {"PK": s(f"JOB#{JOB}"), "SK": s("META")}, old={"stage": s("Failed")}),

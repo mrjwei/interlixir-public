@@ -62,7 +62,7 @@ def to_event(record):
         elif sk.startswith("DOC#"):
             user_id = _attr(old, "userId")
             if user_id is None:
-                # Written by synthesis from M8 on. Without it GC can't find the S3 object; a retry won't help.
+                # Written by synthesis. Without it GC can't find the S3 object; a retry won't help.
                 logs.error("document without userId, skipped", PK=pk, SK=sk)
                 return None
             detail = {

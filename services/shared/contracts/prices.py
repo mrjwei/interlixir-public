@@ -8,7 +8,7 @@ Bedrock pricing page (ap-southeast-2, on-demand). Name: MODEL_PRICES_PARAMETER, 
   burst of calls costs one read.
 - **Bounded:** connect 2 s, read 3 s, 2 attempts. A slow SSM can hold one call up for a few seconds, never a minute.
 - **Never fatal:** if the read fails or the value isn't a valid table, the last good table is kept; with none, the
-  MODEL_PRICES environment variable (the pre-M21 setting) is used; with none of that, the table is empty and
+  MODEL_PRICES environment variable (the legacy setting) is used; with none of that, the table is empty and
   cost is 0, which the callers log per model. The failure is logged and the next try is a TTL later.
 - MODEL_PRICES_PARAMETER set to an empty string turns SSM off and reads only MODEL_PRICES (tests, local runs).
 """

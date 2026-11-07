@@ -1,4 +1,4 @@
-"""Jobs: status (polled about every 3 s by the SPA, cached for 5 s: M12) and retry."""
+"""Jobs: status (polled about every 3 s by the SPA, cached for 5 s) and retry."""
 
 from fastapi import APIRouter, Response
 

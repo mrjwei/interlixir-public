@@ -140,7 +140,7 @@ class Context:
 
 class Base(unittest.TestCase):
     """A project, its recording, a job at "Transcribing 2/2" with the synthesis claim, two chunk transcripts,
-    the default template and one context file, as M5-M7 leave them."""
+    the default template and one context file, as the earlier stages leave them."""
 
     def setUp(self):
         aws = mock_aws()
@@ -478,7 +478,7 @@ class TestContextFiles(Base):
 
 
 class TestLogs(Base):
-    """M16: the fields the trace query reads, and the metrics the dashboard reads, from the EMF lines."""
+    """the fields the trace query reads, and the metrics the dashboard reads, from the EMF lines."""
 
     def metrics(self, record):
         [directive] = record["_aws"]["CloudWatchMetrics"]

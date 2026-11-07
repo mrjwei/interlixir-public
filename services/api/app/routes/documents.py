@@ -48,7 +48,7 @@ def get_document(project_id: Id, document_id: Id, user_id: UserId):
         "jobId": item.get("jobId"),
         "title": item.get("documentTitle"),
         "markdown": store.read_document(user_id, project_id, document_id),
-        # What the document was made from (M9's document view); the instruction and schema are on the job.
+        # What the document was made from; the instruction and schema are on the job.
         "contextFiles": [
             {"contextFileId": keys.strip(c["SK"], keys.CTX_PREFIX), "fileName": c.get("fileName")}
             for c in store.job_context_files(project_id, item.get("jobId"))
